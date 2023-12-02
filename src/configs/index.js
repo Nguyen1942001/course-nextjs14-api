@@ -1,0 +1,71 @@
+const CONFIG_MESSAGE_ERRORS = {
+  INVALID: {
+    type: "INVALID",
+    status: 400,
+  },
+  ALREADY_EXIST: {
+    type: "ALREADY_EXIST",
+    status: 409,
+  },
+  GET_SUCCESS: {
+    type: "SUCCESS",
+    status: 200,
+  },
+  ACTION_SUCCESS: {
+    type: "SUCCESS",
+    status: 201,
+  },
+  UNAUTHORIZED: {
+    type: "UNAUTHORIZED",
+    status: 401,
+  },
+  INTERNAL_ERROR: {
+    type: "INTERNAL_SERVER_ERROR",
+    status: 500,
+  },
+};
+
+const CONFIG_PERMISSIONS = {
+  ADMIN: "ADMIN.GRANTED",
+  BASIC: "BASIC.PUBLIC",
+  PRODUCT: {
+    PRODUCT: {
+      CREATE: "PRODUCT.PRODUCT.CREATE",
+      UPDATE: "PRODUCT.PRODUCT.UPDATE",
+      DELETE: "PRODUCT.PRODUCT.DELETE",
+    },
+    PRODUCT_TYPE: {
+      VIEW: "PRODUCT.PRODUCT_TYPE.VIEW",
+      CREATE: "PRODUCT.PRODUCT_TYPE.CREATE",
+      UPDATE: "PRODUCT.PRODUCT_TYPE.UPDATE",
+      DELETE: "PRODUCT.PRODUCT_TYPE.DELETE",
+    },
+  },
+  USER: {
+    VIEW: "USER.VIEW",
+    CREATE: "USER.CREATE",
+    UPDATE: "USER.UPDATE",
+    DELETE: "USER.DELETE",
+  },
+  ROLE: {
+    VIEW: "ROLE.VIEW",
+    CREATE: "ROLE.CREATE",
+    UPDATE: "ROLE.UPDATE",
+    DELETE: "ROLE.DELETE",
+  },
+  REVIEW: {
+    UPDATE: "REVIEW.UPDATE",
+    DELETE: "REVIEW.DELETE",
+  },
+  ORDER: {
+    VIEW: "ORDER.VIEW",
+    CREATE: "ORDER.CREATE",
+    UPDATE: "ORDER.UPDATE",
+    DELETE: "ORDER.DELETE",
+  },
+};
+
+module.exports = {
+  CONFIG_MESSAGE_ERRORS,
+  CONFIG_PERMISSIONS,
+};
