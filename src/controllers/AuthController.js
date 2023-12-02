@@ -268,6 +268,120 @@ const resetPasswordMe = async (req, res) => {
   }
 };
 
+const registerGoogle = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    if (idToken) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The idToken is required`,
+      });
+    }
+
+    const response = await AuthService.registerGoogle(idToken);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      typeError: "Internal Server Error",
+      data: null,
+      status: "Error",
+    });
+  }
+};
+
+const loginGoogle = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    if (idToken) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The idToken is required`,
+      });
+    }
+
+    const response = await AuthService.registerGoogle(idToken);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      typeError: "Internal Server Error",
+      data: null,
+      status: "Error",
+    });
+  }
+};
+
+const registerFacebook = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field idToken is required`,
+      });
+    }
+
+    const response = await AuthService.registerFacebook(req.body);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      typeError: "Internal Server Error",
+      data: null,
+      status: "Error",
+    });
+  }
+};
+
+const loginFacebook = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field idToken is required`,
+      });
+    }
+
+    const response = await AuthService.loginFacebook(req.body);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      typeError: "Internal Server Error",
+      data: null,
+      status: "Error",
+    });
+  }
+};
+
 module.exports = {
   loginUser,
   refreshToken,
@@ -277,4 +391,8 @@ module.exports = {
   changePasswordMe,
   forgotPasswordMe,
   resetPasswordMe,
+  registerGoogle,
+  registerFacebook,
+  loginGoogle,
+  loginFacebook,
 };

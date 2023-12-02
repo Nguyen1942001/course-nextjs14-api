@@ -104,6 +104,226 @@ paths:
       security:
         - bearerAuth: []
 
+  /api/auth/register-google:
+    post:
+      tags:
+        - auth
+      summary: Register user with google
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+          application/xml:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+  
+  /api/auth/login-google:
+    post:
+      tags:
+        - auth
+      summary: Login user with google
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+          application/xml:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+
+  /api/auth/register-facebook:
+    post:
+      tags:
+        - auth
+      summary: Register user with facebook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+          application/xml:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+
+  /api/auth/login-facebook:
+    post:
+      tags:
+        - auth
+      summary: Login user with facebook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+          application/xml:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                idToken:
+                  type: string
+              required:
+                - idToken
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+
   /api/auth/refresh-token:
     post:
       tags:
@@ -1427,6 +1647,12 @@ paths:
           description: sort of list products
           required: false
           example: "created asc"
+          schema:
+            type: string
+        - name: ProductType
+          in: query
+          description: id of type product (if multiple add | )
+          required: false
           schema:
             type: string
       responses:

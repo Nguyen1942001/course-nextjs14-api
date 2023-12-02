@@ -14,16 +14,12 @@ const initializeDB = async () => {
         useUnifiedTopology: true,
       })
       .then(async () => {
-        const defaultBasicRole = new Role({
-          name: "Basic",
-          permissions: [CONFIG_PERMISSIONS.BASIC],
-        });
+       
         const defaultAdminRole = new Role({
           name: "Admin",
           permissions: [CONFIG_PERMISSIONS.ADMIN],
         });
 
-        await defaultBasicRole.save();
         await defaultAdminRole.save();
 
         const hash = bcrypt.hashSync("123456789Kha@", 10);

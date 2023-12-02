@@ -1,11 +1,12 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("./JwtService");
-const { CONFIG_MESSAGE_ERRORS } = require("../configs");
+const { CONFIG_MESSAGE_ERRORS, CONFIG_PERMISSIONS } = require("../configs");
 const EmailService = require("../services/EmailService");
 const dotenv = require("dotenv");
 const { addToBlacklist, isAdminPermission } = require("../utils");
 dotenv.config();
+const { OAuth2Client } = require("google-auth-library");
 
 const loginUser = (userLogin) => {
   return new Promise(async (resolve, reject) => {
@@ -299,6 +300,250 @@ const resetPasswordMe = (secretKey, newPassword) => {
   });
 };
 
+const verifyGoogleIdToken = async (idToken) => {
+  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    console.log(payload);
+    return payload;
+  } catch (error) {
+    return null;
+  }
+};
+
+const verifyFacebookIdToken = async (idToken) => {
+  try {
+    const facebookResponse = await axios.get(
+      `https://graph.facebook.com/debug_token?input_token=${idToken}&access_token=${process.env.FACEBOOK_APP_ID}|${process.env.FACEBOOK_APP_SECRET}`
+    );
+
+    const data = facebookResponse.data;
+
+    console.log(data);
+
+    if (
+      data.data.is_valid &&
+      data.data.app_id === process.env.FACEBOOK_APP_ID
+    ) {
+      return data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    return null;
+  }
+};
+
+const registerGoogle = (idToken) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const payload = await verifyGoogleIdToken(idToken);
+      if (!payload) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "Validate user is error",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      const { email } = payload;
+
+      let checkUser = await User.findOne({ email: email });
+      if (checkUser) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+          message: "The user is existed",
+          typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      const newUser = await User.create({
+        email,
+        role: [CONFIG_PERMISSIONS.BASIC],
+      });
+      if (newUser) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
+          message: "Register user success",
+          typeError: "",
+          data: newUser,
+          statusMessage: "Success",
+        });
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const loginGoogle = (idToken) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const payload = await verifyGoogleIdToken(idToken);
+      if (!payload) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "Validate user is error",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      const { email } = payload;
+
+      const checkUser = await User.findOne({ email: email });
+      if (!checkUser) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "The user is not existed",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      const access_token = await generateToken(
+        {
+          id: checkUser.id,
+          permissions: checkUser?.role?.permissions,
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        process.env.ACCESS_TOKEN_EXPIRE
+      );
+
+      const refresh_token = await generateToken(
+        {
+          id: checkUser.id,
+          permissions: checkUser?.role?.permissions,
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        process.env.REFRESH_TOKEN_EXPIRE
+      );
+
+      resolve({
+        status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
+        message: "Login Success",
+        typeError: "",
+        statusMessage: "Success",
+        data: checkUser,
+        access_token,
+        refresh_token,
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const registerFacebook = (idToken) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const payload = await verifyFacebookIdToken(idToken);
+      if (!payload) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "Validate user is error",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      const { email } = payload;
+
+      let checkUser = await User.findOne({ email: email });
+      if (checkUser) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+          message: "The user is existed",
+          typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      const newUser = await User.create({
+        email,
+        role: [CONFIG_PERMISSIONS.BASIC],
+      });
+      if (newUser) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
+          message: "Register user success",
+          typeError: "",
+          data: newUser,
+          statusMessage: "Success",
+        });
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const loginFacebook = (idToken) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const payload = await verifyFacebookIdToken(idToken);
+      if (!payload) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "Validate user is error",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      const { email } = payload;
+
+      let checkUser = await User.findOne({ email: email });
+      if (!checkUser) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "The user is not existed",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+
+      const access_token = await generateToken(
+        {
+          id: checkUser.id,
+          permissions: checkUser?.role?.permissions,
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        process.env.ACCESS_TOKEN_EXPIRE
+      );
+
+      const refresh_token = await generateToken(
+        {
+          id: checkUser.id,
+          permissions: checkUser?.role?.permissions,
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        process.env.REFRESH_TOKEN_EXPIRE
+      );
+
+      resolve({
+        status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
+        message: "Login Success",
+        typeError: "",
+        statusMessage: "Success",
+        data: checkUser,
+        access_token,
+        refresh_token,
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 module.exports = {
   loginUser,
   logoutUser,
@@ -306,4 +551,8 @@ module.exports = {
   changePasswordMe,
   forgotPasswordMe,
   resetPasswordMe,
+  registerGoogle,
+  registerFacebook,
+  loginFacebook,
+  loginGoogle,
 };

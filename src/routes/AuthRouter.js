@@ -25,4 +25,24 @@ router.post(
   authController.resetPasswordMe
 );
 
+router.post(
+  "/register-google",
+  authController.registerGoogle
+);
+
+router.post(
+  "/login-google",
+  authController.loginGoogle
+);
+
+router.post(
+  "/login-facebook",
+  authController.loginFacebook
+);
+
+router.post(
+  "/register-facebook",
+  authController.registerFacebook
+);
+
 module.exports = router;

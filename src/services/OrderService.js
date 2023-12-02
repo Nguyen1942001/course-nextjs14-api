@@ -67,7 +67,7 @@ const createOrder = (newOrder) => {
           arrId.push(item.id);
         });
         resolve({
-          message: `San pham voi id: ${arrId.join(",")} khong du hang`,
+          message: `The product with id: ${arrId.join(",")} out of the stock`,
           status: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status,
           typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
           statusMessage: "Error",
@@ -238,7 +238,7 @@ const getAllOrder = () => {
         }
       }
 
-      const totalCount = await User.countDocuments(query);
+      const totalCount = await Order.countDocuments(query);
 
       const totalPage = Math.ceil(totalCount / limit);
 
@@ -303,7 +303,7 @@ const getAllOrderMe = (userId) => {
         }
       }
 
-      const totalCount = await User.countDocuments(query);
+      const totalCount = await Order.countDocuments(query);
 
       const totalPage = Math.ceil(totalCount / limit);
 
