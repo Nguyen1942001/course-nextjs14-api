@@ -34,7 +34,7 @@ router.get(
   ProductTypeController.getAllProductType
 );
 
-router.post(
+router.delete(
   "/delete-many",
   AuthPermission(CONFIG_PERMISSIONS.PRODUCT.PRODUCT_TYPE.DELETE),
   ProductTypeController.deleteManyProductType

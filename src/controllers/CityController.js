@@ -1,19 +1,11 @@
 const { CONFIG_MESSAGE_ERRORS } = require("../configs");
-const OrderService = require("../services/OrderService");
 const { validateRequiredInput } = require("../utils");
+const CityService = require("../services/CityService");
 
-const createOrder = async (req, res) => {
+const createCity = async (req, res) => {
   try {
-    const requiredFields = validateRequiredInput(req.body, [
-      "paymentMethod",
-      "itemsPrice",
-      "shippingPrice",
-      "totalPrice",
-      "fullName",
-      "city",
-      "address",
-      "phone",
-    ]);
+    const requiredFields = validateRequiredInput(req.body, ["name"]);
+
     if (requiredFields?.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
@@ -22,7 +14,7 @@ const createOrder = async (req, res) => {
         data: null,
       });
     }
-    const response = await OrderService.createOrder(req.body);
+    const response = await CityService.createCity(req.body);
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({
       typeError,
@@ -40,49 +32,19 @@ const createOrder = async (req, res) => {
   }
 };
 
-const getDetailsOrder = async (req, res) => {
+const updateCity = async (req, res) => {
   try {
-    const orderId = req.params.orderId;
-    if (!orderId) {
+    const cityId = req.params.id;
+    if (!cityId) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
         typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-        message: `The field orderId is required`,
-        data: null,
+        message: `The field cityId is required`,
       });
     }
-    const response = await OrderService.getOrderDetails(orderId);
-    const { data, status, typeError, message, statusMessage } = response;
-    return res.status(status).json({
-      typeError,
-      data,
-      message,
-      status: statusMessage,
-    });
-  } catch (e) {
-    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
-      message: "Internal Server Error",
-      data: null,
-      status: "Error",
-      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
-    });
-  }
-};
-
-const cancelOrderDetails = async (req, res) => {
-  try {
-    const orderId = req.body.orderId;
-    if (!orderId) {
-      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
-        status: "Error",
-        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-        message: `The field orderId is required`,
-        data: null,
-      });
-    }
-    const response = await OrderService.cancelOrderDetails(
-      req.body.orderId,
-      req.body.orderItems
+    const response = await CityService.updateCity(
+      cityId,
+      req.body
     );
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({
@@ -92,7 +54,6 @@ const cancelOrderDetails = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
-    // console.log(e)
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,
@@ -102,10 +63,19 @@ const cancelOrderDetails = async (req, res) => {
   }
 };
 
-const getAllOrder = async (req, res) => {
+const getDetailsCity = async (req, res) => {
   try {
-    const params = req.query;
-    const response = await OrderService.getAllOrder(params);
+    const cityId = req.params.id;
+    if (!cityId) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field cityId is required`,
+      });
+    }
+    const response = await CityService.getDetailsCity(
+      cityId
+    );
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({
       typeError,
@@ -114,7 +84,6 @@ const getAllOrder = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
-    // console.log(e)
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,
@@ -124,19 +93,66 @@ const getAllOrder = async (req, res) => {
   }
 };
 
-const getAllOrderMe = async (req, res) => {
+const deleteCity = async (req, res) => {
   try {
-    const params = req.query;
-    const userId = "";
-    if (!userId) {
+    const cityId = req.params.id;
+    if (!cityId) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
         typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-        message: `The field userId is required`,
-        data: null,
+        message: `The field cityId is required`,
       });
     }
-    const response = await OrderService.getAllOrderMe(params);
+    const response = await CityService.deleteCity(cityId);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+const deleteMany = async (req, res) => {
+  try {
+    const ids = req.query.cityIds;
+    if (!ids || !ids.length) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field cityIds is required`,
+      });
+    }
+    const response = await CityService.deleteManyCities(ids);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+const getAllCity = async (req, res) => {
+  try {
+    const params = req.query;
+    const response = await CityService.getAllCity(params);
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({
       typeError,
@@ -155,9 +171,10 @@ const getAllOrderMe = async (req, res) => {
 };
 
 module.exports = {
-  createOrder,
-  getDetailsOrder,
-  cancelOrderDetails,
-  getAllOrder,
-  getAllOrderMe,
+  createCity,
+  updateCity,
+  getDetailsCity,
+  deleteCity,
+  getAllCity,
+  deleteMany,
 };

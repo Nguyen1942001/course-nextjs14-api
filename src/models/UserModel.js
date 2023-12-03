@@ -10,7 +10,11 @@ const userSchema = new mongoose.Schema(
     phoneNumber: { type: String },
     address: { type: String },
     avatar: { type: String },
-    city: { type: String },
+    city: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "City",
+      required: true,
+    },
     status: {
       type: Number,
       default: 1,
@@ -22,6 +26,10 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    userType: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,

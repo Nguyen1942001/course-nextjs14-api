@@ -26,7 +26,7 @@ router.delete(
 
 router.get("/", ProductController.getAllProduct);
 
-router.post(
+router.delete(
   "/delete-many",
   AuthPermission(CONFIG_PERMISSIONS.PRODUCT.PRODUCT.DELETE),
   ProductController.deleteMany

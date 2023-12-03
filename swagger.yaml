@@ -810,6 +810,8 @@ paths:
           description: ALREADY_EXIST
         "400":
           description: INVALID
+      security:
+        - bearerAuth: []
     delete:
       tags:
         - users
@@ -845,6 +847,8 @@ paths:
           description: ALREADY_EXIST
         "400":
           description: INVALID
+      security:
+        - bearerAuth: []
     put:
       tags:
         - users
@@ -1558,6 +1562,275 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
+
+  /api/city:
+    post:
+      tags:
+        - city
+      summary: Add a new city
+      description: Add a new city
+      operationId: addCity
+      requestBody:
+        description: Create a new city
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/City"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/City"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/City"
+        required: true
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/City"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/City"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - city
+      summary: Get all product cities
+      description: get all cities
+      operationId: getAllCities
+      parameters:
+        - name: limit
+          in: query
+          description: Limit of list cities
+          required: false
+          example: 10
+          schema:
+            type: number
+        - name: page
+          in: query
+          description: Page of list cities
+          required: false
+          example: 1
+          schema:
+            type: number
+        - name: search
+          in: query
+          description: search of list cities
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: sort of list cities
+          required: false
+          example: "created asc"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/City"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/City"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/city/{cityId}:
+    get:
+      tags:
+        - city
+      summary: Get details city by ID
+      description: Get details city by id of Cities
+      operationId: getCityById
+      parameters:
+        - name: cityId
+          in: path
+          description: ID of city that needs to be fetched
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/City"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/City"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+    delete:
+      tags:
+        - city
+      summary: Delete city by ID
+      description: Try delete city by id of city
+      operationId: deleteCity
+      parameters:
+        - name: cityId
+          in: path
+          description: ID of the city that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/City"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/City"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - city
+      summary: Update an existing city
+      description: Update an existing city type by Id
+      operationId: updateCity
+      parameters:
+        - name: cityId
+          in: path
+          description: city id of city updated
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent city in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/City"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/City"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/City"
+        required: true
+
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/City"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/City"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+  /api/city/delete-many:
+    delete:
+      tags:
+        - city
+      summary: Delete many cities by ids
+      description: Delete many cities by list ids
+      operationId: deleteManyCities
+      parameters:
+        - in: query
+          name: cityIds
+          schema:
+            type: object
+            items:
+              type: string
+          description: Mảng các ID của items cần xóa
+          required: true
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/City"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/City"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
   /api/products:
     post:
       tags:
@@ -2806,6 +3079,15 @@ components:
         - name
       xml:
         name: Role
+    City:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+      xml:
+        name: City
   securitySchemes:
     bearerAuth:
       type: http

@@ -1,7 +1,7 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("./JwtService");
-const { CONFIG_MESSAGE_ERRORS, CONFIG_PERMISSIONS } = require("../configs");
+const { CONFIG_MESSAGE_ERRORS, CONFIG_PERMISSIONS, CONFIG_USER_TYPE } = require("../configs");
 const EmailService = require("../services/EmailService");
 const dotenv = require("dotenv");
 const { addToBlacklist, isAdminPermission } = require("../utils");
@@ -367,6 +367,7 @@ const registerGoogle = (idToken) => {
       const newUser = await User.create({
         email,
         role: [CONFIG_PERMISSIONS.BASIC],
+        userType: CONFIG_USER_TYPE.GOOGLE
       });
       if (newUser) {
         resolve({
@@ -469,6 +470,7 @@ const registerFacebook = (idToken) => {
       const newUser = await User.create({
         email,
         role: [CONFIG_PERMISSIONS.BASIC],
+        userType: CONFIG_USER_TYPE.FACEBOOK
       });
       if (newUser) {
         resolve({

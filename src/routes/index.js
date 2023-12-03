@@ -6,6 +6,7 @@ const PaymentRouter = require("./PaymentRouter");
 const ProductTypeRouter = require("./ProductTypeRouter");
 const ReviewRouter = require("./ReviewRouter");
 const RoleRouter = require("./RoleRouter");
+const CityRouter = require("./CityRouter");
 
 const routes = (app) => {
   app.use("/api/auth", AuthRouter);
@@ -16,6 +17,7 @@ const routes = (app) => {
   app.use("/api/payment", PaymentRouter);
   app.use("/api/reviews", ReviewRouter);
   app.use("/api/roles", RoleRouter);
+  app.use("/api/city", CityRouter);
 };
 
 module.exports = routes;
