@@ -111,7 +111,8 @@ const addToBlacklist = (token) => {
     const blacklist = getBlacklist();
     blacklist.push({
       token,
-      expiry: Date.now() + parseTimeToMilliseconds(process.env.ACCESS_TOKEN_EXPIRE)
+      expiry:
+        Date.now() + parseTimeToMilliseconds(process.env.ACCESS_TOKEN_EXPIRE),
     });
 
     fs.writeFileSync(BLACKLIST_FILE, JSON.stringify(blacklist), "utf8");
@@ -125,8 +126,37 @@ const isTokenInBlacklist = (token) => {
 };
 
 const isAdminPermission = (permissions) => {
-  return permissions.includes(CONFIG_PERMISSIONS.ADMIN)
-}
+  return permissions.includes(CONFIG_PERMISSIONS.ADMIN);
+};
+
+const validateDiscountDate = (discount, discountStartDate, discountEndDate) => {
+  if (discount > 0) {
+    if (!discountStartDate || !discountEndDate) {
+      return {
+        isValid: false,
+        error: "Discount must have both start and end dates.",
+      };
+    }
+
+    
+    if (discountStartDate.getTime() < new Date().setHours(0, 0, 0, 0)) {
+      return {
+        isValid: false,
+        error:
+          "Discount start date should be greater than or equal to the current date.",
+      };
+    }
+
+    if (discountEndDate.getTime() <= discountStartDate.getTime()) {
+      return {
+        isValid: false,
+        error: "Discount end date should be greater than the start date.",
+      };
+    }
+  }
+
+  return { isValid: true, error: null };
+};
 
 module.exports = {
   validateRequiredInput,
@@ -138,5 +168,6 @@ module.exports = {
   existedPermissionRole,
   addToBlacklist,
   isTokenInBlacklist,
-  isAdminPermission
+  isAdminPermission,
+  validateDiscountDate,
 };

@@ -202,9 +202,10 @@ const getAllOrder = () => {
       const search = params?.search ?? "";
       const page = params?.page ?? 1;
       const order = params?.order ?? "";
-      const user = params.user ?? "";
-      const product = params.product ?? "";
+      const userId = params.userId ?? "";
+      const productId = params.productId ?? "";
       const status = params.status ?? "";
+      const cityId = params.cityId ?? "";
 
       const query = buildQuery(search);
 
@@ -214,28 +215,38 @@ const getAllOrder = () => {
         order
       );
 
-      if (user) {
-        if (Array.isArray(user)) {
-          query.user = { $in: user };
-        } else {
-          query.user = user;
-        }
+      if (userId) {
+        const userIds = userId
+          ?.split("|")
+          .map((id) => mongoose.Types.ObjectId(id));
+        query.type =
+          userIds.length > 1
+            ? { $in: userIds }
+            : mongoose.Types.ObjectId(userId);
       }
 
-      if (product) {
-        if (Array.isArray(product)) {
-          query.product = { $in: product };
-        } else {
-          query.product = product;
-        }
+      if (productId) {
+        const productIds = productId
+          ?.split("|")
+          .map((id) => mongoose.Types.ObjectId(id));
+        query.type =
+          productIds.length > 1
+            ? { $in: productIds }
+            : mongoose.Types.ObjectId(productId);
+      }
+      if (cityId) {
+        const cityIds = cityId
+          ?.split("|")
+          .map((id) => mongoose.Types.ObjectId(id));
+        query.type =
+          cityIds.length > 1
+            ? { $in: cityIds }
+            : mongoose.Types.ObjectId(cityId);
       }
 
       if (status) {
-        if (Array.isArray(status)) {
-          query.status = { $in: status };
-        } else {
-          query.status = status;
-        }
+        const status = status?.split("|").map((id) => id);
+        query.type = { $in: status };
       }
 
       const totalCount = await Order.countDocuments(query);
@@ -280,7 +291,7 @@ const getAllOrderMe = (userId) => {
       const product = params.product ?? "";
       const status = params.status ?? "";
       const query = buildQuery(search);
-      query.user = userId
+      query.user = userId;
       const { startIndex, sortOptions } = preparePaginationAndSorting(
         page,
         limit,
@@ -340,5 +351,5 @@ module.exports = {
   getOrderDetails,
   cancelOrderDetails,
   getAllOrder,
-  getAllOrderMe
+  getAllOrderMe,
 };

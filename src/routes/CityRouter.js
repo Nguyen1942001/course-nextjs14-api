@@ -6,13 +6,13 @@ const CityController = require("../controllers/CityController");
 
 router.post(
   "/",
-  AuthPermission(CONFIG_PERMISSIONS.CITY.CREATE),
+  AuthPermission(CONFIG_PERMISSIONS.SETTING.CITY.CREATE),
   CityController.createCity
 );
 
 router.put(
   "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.CITY.UPDATE),
+  AuthPermission(CONFIG_PERMISSIONS.SETTING.CITY.UPDATE),
   CityController.updateCity
 );
 
@@ -20,7 +20,7 @@ router.get("/:id", CityController.getDetailsCity);
 
 router.delete(
   "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.CITY.DELETE),
+  AuthPermission(CONFIG_PERMISSIONS.SETTING.CITY.DELETE),
   CityController.deleteCity
 );
 
@@ -28,7 +28,7 @@ router.get("/", CityController.getAllCity);
 
 router.delete(
   "/delete-many",
-  AuthPermission(CONFIG_PERMISSIONS.CITY.DELETE),
+  AuthPermission(CONFIG_PERMISSIONS.SETTING.CITY.DELETE),
   CityController.deleteMany
 );
 

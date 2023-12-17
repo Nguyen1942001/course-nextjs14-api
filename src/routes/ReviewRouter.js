@@ -12,11 +12,23 @@ router.put(
   ReviewController.updateReview
 );
 
+router.put(
+  "/me/:id",
+  AuthPermission("", true),
+  ReviewController.updateReviewMine
+);
+
 router.get("/:id", ReviewController.getDetailsReview);
 
 router.delete(
   "/:id",
   AuthPermission(CONFIG_PERMISSIONS.REVIEW.DELETE),
+  ReviewController.deleteReview
+);
+
+router.delete(
+  "/me/:id",
+  AuthPermission("", true),
   ReviewController.deleteReview
 );
 

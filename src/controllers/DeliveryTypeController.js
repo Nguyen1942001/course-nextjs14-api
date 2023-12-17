@@ -1,15 +1,10 @@
 const { CONFIG_MESSAGE_ERRORS } = require("../configs");
-const ReviewService = require("../services/ReviewService");
 const { validateRequiredInput } = require("../utils");
+const DeliveryTypeService = require("../services/DeliveryTypeService");
 
-const createReview = async (req, res) => {
+const createDeliveryType = async (req, res) => {
   try {
-    const requiredFields = validateRequiredInput(req.body, [
-      "content",
-      "star",
-      "user",
-      "product",
-    ]);
+    const requiredFields = validateRequiredInput(req.body, ["name"]);
 
     if (requiredFields?.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
@@ -19,7 +14,7 @@ const createReview = async (req, res) => {
         data: null,
       });
     }
-    const response = await ReviewService.createReview(req.body);
+    const response = await DeliveryTypeService.createDeliveryType(req.body);
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({
       typeError,
@@ -37,186 +32,18 @@ const createReview = async (req, res) => {
   }
 };
 
-const updateReview = async (req, res) => {
+const updateDeliveryType = async (req, res) => {
   try {
-    const reviewId = req.params.id;
-    if (!reviewId) {
+    const deliveryTypeId = req.params.id;
+    if (!deliveryTypeId) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
         typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-        message: `The field reviewId is required`,
+        message: `The field deliveryTypeId is required`,
       });
     }
-    const response = await ReviewService.updateReview(reviewId, req.body);
-    const { data, status, typeError, message, statusMessage } = response;
-    return res.status(status).json({
-      typeError,
-      data,
-      message,
-      status: statusMessage,
-    });
-  } catch (e) {
-    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
-      message: "Internal Server Error",
-      data: null,
-      status: "Error",
-      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
-    });
-  }
-};
-
-const getDetailsReview = async (req, res) => {
-  try {
-    const reviewId = req.params.id;
-    if (!reviewId) {
-      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
-        status: "Error",
-        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-        message: `The field reviewId is required`,
-        data: null,
-      });
-    }
-    const response = await ReviewService.getDetailsReview(reviewId);
-    const { data, status, typeError, message, statusMessage } = response;
-    return res.status(status).json({
-      typeError,
-      data,
-      message,
-      status: statusMessage,
-    });
-  } catch (e) {
-    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
-      message: "Internal Server Error",
-      data: null,
-      status: "Error",
-      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
-    });
-  }
-};
-
-const deleteReview = async (req, res) => {
-  try {
-    const reviewId = req.params.id;
-    if (!reviewId) {
-      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
-        status: "Error",
-        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-        message: `The field reviewId is required`,
-        data: null,
-      });
-    }
-    const response = await ReviewService.deleteReview(reviewId);
-    const { data, status, typeError, message, statusMessage } = response;
-    return res.status(status).json({
-      typeError,
-      data,
-      message,
-      status: statusMessage,
-    });
-  } catch (e) {
-    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
-      message: "Internal Server Error",
-      data: null,
-      status: "Error",
-      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
-    });
-  }
-};
-
-const deleteReviewMine = async (req, res) => {
-  try {
-    const reviewId = req.params.id;
-    const userId = req.userId;
-    if (!reviewId) {
-      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
-        status: "Error",
-        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-        message: `The field reviewId is required`,
-        data: null,
-      });
-    }
-    const response = await ReviewService.deleteReviewMine(reviewId, userId);
-    const { data, status, typeError, message, statusMessage } = response;
-    return res.status(status).json({
-      typeError,
-      data,
-      message,
-      status: statusMessage,
-    });
-  } catch (e) {
-    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
-      message: "Internal Server Error",
-      data: null,
-      status: "Error",
-      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
-    });
-  }
-};
-
-const deleteMany = async (req, res) => {
-  try {
-    const ids = req.query.reviewIds;
-    if (!ids || !ids.length) {
-      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
-        status: "Error",
-        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-        message: `The field reviewIds is required`,
-        data: null,
-      });
-    }
-    const response = await ReviewService.deleteManyReview(ids);
-    const { data, status, typeError, message, statusMessage } = response;
-    return res.status(status).json({
-      typeError,
-      data,
-      message,
-      status: statusMessage,
-    });
-  } catch (e) {
-    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
-      message: "Internal Server Error",
-      data: null,
-      status: "Error",
-      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
-    });
-  }
-};
-
-const getAllReview = async (req, res) => {
-  try {
-    const params = req.query;
-    const response = await ReviewService.getAllReview(params);
-    const { data, status, typeError, message, statusMessage } = response;
-    return res.status(status).json({
-      typeError,
-      data,
-      message,
-      status: statusMessage,
-    });
-  } catch (e) {
-    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
-      message: "Internal Server Error",
-      data: null,
-      status: "Error",
-      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
-    });
-  }
-};
-
-const updateReviewMine = async (req, res) => {
-  try {
-    const reviewId = req.params.id;
-    const userId = req.userId;
-    if (!reviewId) {
-      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
-        status: "Error",
-        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-        message: `The field reviewId is required`,
-      });
-    }
-    const response = await ReviewService.updateReviewMine(
-      reviewId,
-      userId,
+    const response = await DeliveryTypeService.updateDeliveryType(
+      deliveryTypeId,
       req.body
     );
     const { data, status, typeError, message, statusMessage } = response;
@@ -236,13 +63,118 @@ const updateReviewMine = async (req, res) => {
   }
 };
 
+const getDetailsDeliveryType = async (req, res) => {
+  try {
+    const deliveryTypeId = req.params.id;
+    if (!deliveryTypeId) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field deliveryTypeId is required`,
+      });
+    }
+    const response = await DeliveryTypeService.getDetailsDeliveryType(
+      deliveryTypeId
+    );
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+const deleteDeliveryType = async (req, res) => {
+  try {
+    const deliveryTypeId = req.params.id;
+    if (!deliveryTypeId) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field deliveryTypeId is required`,
+      });
+    }
+    const response = await DeliveryTypeService.deleteDeliveryType(deliveryTypeId);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+const deleteMany = async (req, res) => {
+  try {
+    const ids = req.query.deliveryTypeIds;
+    if (!ids || !ids.length) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field deliveryTypeIds is required`,
+      });
+    }
+    const response = await DeliveryTypeService.deleteManyDeliveryType(ids);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+const getAllDeliveryType = async (req, res) => {
+  try {
+    const params = req.query;
+    const response = await DeliveryTypeService.getAllDeliveryType(params);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
 module.exports = {
-  createReview,
-  updateReview,
-  getDetailsReview,
-  deleteReview,
-  getAllReview,
+  createDeliveryType,
+  updateDeliveryType,
+  getDetailsDeliveryType,
+  deleteDeliveryType,
+  getAllDeliveryType,
   deleteMany,
-  updateReviewMine,
-  deleteReviewMine
 };

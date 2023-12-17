@@ -7,6 +7,8 @@ const ProductTypeRouter = require("./ProductTypeRouter");
 const ReviewRouter = require("./ReviewRouter");
 const RoleRouter = require("./RoleRouter");
 const CityRouter = require("./CityRouter");
+const DeliveryTypeRouter = require("./DeliveryTypeRouter");
+const PaymentTypeRouter = require("./PaymentTypeRouter");
 
 const routes = (app) => {
   app.use("/api/auth", AuthRouter);
@@ -18,6 +20,8 @@ const routes = (app) => {
   app.use("/api/reviews", ReviewRouter);
   app.use("/api/roles", RoleRouter);
   app.use("/api/city", CityRouter);
+  app.use("/api/delivery-type", DeliveryTypeRouter);
+  app.use("/api/payment-type", PaymentTypeRouter);
 };
 
 module.exports = routes;

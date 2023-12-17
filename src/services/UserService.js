@@ -166,10 +166,39 @@ const getAllUser = (params) => {
       const page = params?.page ?? 1;
       const order = params?.order ?? "";
       const query = {};
+      const roleId = params?.roleId ?? "";
+      const status = params?.status ?? "";
+      const cityId = params?.cityId ?? "";
+
       if (search) {
         const searchRegex = { $regex: search, $options: "i" };
 
         query.$or = [{ email: searchRegex }];
+      }
+
+      if (roleId) {
+        const roleIds = roleId
+          ?.split("|")
+          .map((id) => mongoose.Types.ObjectId(id));
+        query.type =
+          roleIds.length > 1
+            ? { $in: roleIds }
+            : mongoose.Types.ObjectId(roleId);
+      }
+
+      if (cityId) {
+        const cityIds = cityId
+          ?.split("|")
+          .map((id) => mongoose.Types.ObjectId(id));
+        query.type =
+          cityIds.length > 1
+            ? { $in: cityIds }
+            : mongoose.Types.ObjectId(cityId);
+      }
+
+      if (status) {
+        const status = status?.split("|").map((id) => id);
+        query.type = { $in: status };
       }
 
       const totalCount = await User.countDocuments(query);

@@ -10,6 +10,8 @@ const productSchema = new mongoose.Schema(
     countInStock: { type: Number, required: true },
     description: { type: String },
     discount: { type: Number },
+    discountStartDate: { type: Date },
+    discountEndDate: { type: Date },   
     sold: { type: Number },
     type: {
       type: mongoose.Schema.Types.ObjectId,

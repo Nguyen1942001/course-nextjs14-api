@@ -27,9 +27,14 @@ const orderSchema = new mongoose.Schema(
       phone: { type: Number, required: true },
     },
     paymentMethod: {
-      type: Number,
-      default: 0,
-      enum: [0, 1, 2],
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PaymentType",
+      required: true,
+    },
+    deliveryMethod: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DeliveryType",
+      required: true,
     },
     itemsPrice: { type: Number, required: true },
     shippingPrice: { type: Number, required: true },
@@ -46,7 +51,6 @@ const orderSchema = new mongoose.Schema(
       default: 0,
       enum: [0, 1],
     },
-    deliveredAt: { type: Date },
   },
   {
     timestamps: true,

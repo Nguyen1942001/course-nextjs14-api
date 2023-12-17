@@ -1,6 +1,6 @@
 const { CONFIG_MESSAGE_ERRORS } = require("../configs");
 const ProductService = require("../services/ProductService");
-const { validateRequiredInput } = require("../utils");
+const { validateRequiredInput, validateDiscountDate } = require("../utils");
 
 const createProduct = async (req, res) => {
   try {
@@ -10,14 +10,25 @@ const createProduct = async (req, res) => {
       "type",
       "countInStock",
       "price",
-      "discount",
     ]);
+    const discountValidation = validateDiscountDate(
+      req.body.discount,
+      req.body.discountStartDate,
+      req.body.discountEndDate
+    );
 
     if (requiredFields?.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
         typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
         message: `The field ${requiredFields.join(", ")} is required`,
+        data: null,
+      });
+    } else if (!discountValidation.isValid) {
+      return res.status({
+        status: CONFIG_MESSAGE_ERRORS.INVALID_INPUT.status,
+        message: discountValidation.error,
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID_INPUT.type,
         data: null,
       });
     }
@@ -42,11 +53,40 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
+    const discountValidation = validateDiscountDate(
+      req.body.discount,
+      req.body.discountStartDate,
+      req.body.discountEndDate
+    );
+
+    const requiredFields = validateRequiredInput(req.body, [
+      "name",
+      "image",
+      "type",
+      "countInStock",
+      "price",
+    ]);
+
     if (!productId) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
         typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
         message: `The field productId is required`,
+      });
+    }
+    if (requiredFields?.length) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field ${requiredFields.join(", ")} is required`,
+        data: null,
+      });
+    } else if (!discountValidation.isValid) {
+      return res.status({
+        status: CONFIG_MESSAGE_ERRORS.INVALID_INPUT.status,
+        message: discountValidation.error,
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID_INPUT.type,
+        data: null,
       });
     }
     const response = await ProductService.updateProduct(productId, req.body);

@@ -17,6 +17,12 @@ const createProduct = (newProduct) => {
       slug,
     } = newProduct;
     try {
+      const discountStartDate = newProduct.discountStartDate && discount
+        ? newProduct.discountStartDate
+        : null;
+      const discountEndDate = newProduct.discountEndDate && discount
+        ? newProduct.discountEndDate
+        : null;
       const checkProduct = await Product.findOne({
         slug: slug,
       });
@@ -39,6 +45,8 @@ const createProduct = (newProduct) => {
         description,
         discount: Number(discount),
         slug: slug,
+        discountStartDate,
+        discountEndDate
       });
       if (newProduct) {
         resolve({

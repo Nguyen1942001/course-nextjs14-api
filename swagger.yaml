@@ -158,7 +158,7 @@ paths:
           description: ALREADY_EXIST
         "400":
           description: INVALID
-  
+
   /api/auth/login-google:
     post:
       tags:
@@ -487,8 +487,8 @@ paths:
               type: object
               properties:
                 currentPassword:
-                    type: string
-                    example: 123456789
+                  type: string
+                  example: 123456789
                 newPassword:
                   type: string
                   example: 123456789
@@ -748,6 +748,27 @@ paths:
           description: sort of list users
           required: false
           example: "created asc"
+          schema:
+            type: string
+        - name: roleId
+          in: query
+          description: filter of list users by role id (if many add |)
+          required: false
+          example: "1|2"
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: filter of list users by status of user (if many add |)
+          required: false
+          example: "1|2"
+          schema:
+            type: string
+        - name: cityId
+          in: query
+          description: filter of list users by cityId of user (if many add |)
+          required: false
+          example: "1|2"
           schema:
             type: string
       responses:
@@ -1831,6 +1852,542 @@ paths:
       security:
         - bearerAuth: []
 
+  /api/delivery-type:
+    post:
+      tags:
+        - delivery-type
+      summary: Add a new delivery type
+      description: Add a new delivery type
+      operationId: addDeliveryType
+      requestBody:
+        description: Create a new delivery type
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeliveryType"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/DeliveryType"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/DeliveryType"
+        required: true
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - delivery-type
+      summary: Get all product delivery types
+      description: get all delivery types
+      operationId: getAllDeliveryTypes
+      parameters:
+        - name: limit
+          in: query
+          description: Limit of list delivery types
+          required: false
+          example: 10
+          schema:
+            type: number
+        - name: page
+          in: query
+          description: Page of list delivery types
+          required: false
+          example: 1
+          schema:
+            type: number
+        - name: search
+          in: query
+          description: search of list delivery types
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: sort of list delivery types
+          required: false
+          example: "created asc"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/delivery-type/{deliveryTypeId}:
+    get:
+      tags:
+        - delivery-type
+      summary: Get details delivery type by ID
+      description: Get details delivery type by id of delivery types
+      operationId: getDeliveryTypeById
+      parameters:
+        - name: deliveryTypeId
+          in: path
+          description: ID of delivery type that needs to be fetched
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+    delete:
+      tags:
+        - delivery-type
+      summary: Delete delivery type by ID
+      description: Try delete delivery type by id of city
+      operationId: deleteDeliveryType
+      parameters:
+        - name: deliveryTypeId
+          in: path
+          description: ID of the delivery type that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - delivery-type
+      summary: Update an existing delivery type
+      description: Update an existing delivery type by Id
+      operationId: updateCity
+      parameters:
+        - name: deliveryTypeId
+          in: path
+          description: delivery type id of delivery type updated
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent delivery type in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeliveryType"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/DeliveryType"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/DeliveryType"
+        required: true
+
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+  /api/delivery-type/delete-many:
+    delete:
+      tags:
+        - delivery-type
+      summary: Delete many delivery types by ids
+      description: Delete many delivery types by list ids
+      operationId: deleteManyDeliveryTypes
+      parameters:
+        - in: query
+          name: deliveryTypeIds
+          schema:
+            type: object
+            items:
+              type: string
+          description: Mảng các ID của items cần xóa
+          required: true
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/DeliveryType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/payment-type:
+    post:
+      tags:
+        - payment-type
+      summary: Add a new payment type
+      description: Add a new payment type
+      operationId: addPaymentType
+      requestBody:
+        description: Create a new payment type
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentType"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/PaymentType"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PaymentType"
+        required: true
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - payment-type
+      summary: Get all product payment types
+      description: get all payment types
+      operationId: getAllPaymentTypes
+      parameters:
+        - name: limit
+          in: query
+          description: Limit of list payment types
+          required: false
+          example: 10
+          schema:
+            type: number
+        - name: page
+          in: query
+          description: Page of list payment types
+          required: false
+          example: 1
+          schema:
+            type: number
+        - name: search
+          in: query
+          description: search of list payment types
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: sort of list payment types
+          required: false
+          example: "created asc"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/payment-type/{paymentTypeId}:
+    get:
+      tags:
+        - payment-type
+      summary: Get details payment type by ID
+      description: Get details payment type by id of payment types
+      operationId: getPaymentTypeById
+      parameters:
+        - name: paymentTypeId
+          in: path
+          description: ID of payment type that needs to be fetched
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+    delete:
+      tags:
+        - payment-type
+      summary: Delete payment type by ID
+      description: Try delete payment type by id of payment
+      operationId: deletePaymentType
+      parameters:
+        - name: paymentTypeId
+          in: path
+          description: ID of the payment type that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - payment-type
+      summary: Update an existing payment type
+      description: Update an existing payment type by Id
+      operationId: updateCity
+      parameters:
+        - name: paymentTypeId
+          in: path
+          description: payment type id of payment type updated
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent payment type in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentType"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/PaymentType"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PaymentType"
+        required: true
+
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+  /api/payment-type/delete-many:
+    delete:
+      tags:
+        - payment-type
+      summary: Delete many payment types by ids
+      description: Delete many payment types by list ids
+      operationId: deleteManyPaymentTypes
+      parameters:
+        - in: query
+          name: paymentTypeIds
+          schema:
+            type: object
+            items:
+              type: string
+          description: Mảng các ID của items cần xóa
+          required: true
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/PaymentType"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
   /api/products:
     post:
       tags:
@@ -1922,12 +2479,13 @@ paths:
           example: "created asc"
           schema:
             type: string
-        - name: ProductType
+        - name: productType
           in: query
           description: id of type product (if multiple add | )
           required: false
           schema:
             type: string
+       
       responses:
         "200":
           description: successful operation
@@ -2157,7 +2715,7 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
-  
+
   /api/products/like:
     post:
       tags:
@@ -2360,6 +2918,34 @@ paths:
           description: sort of list orders
           required: false
           example: "created asc"
+          schema:
+            type: string
+        - name: userId
+          in: query
+          description: filter of list order by user id (if many add |)
+          required: false
+          example: "1|2"
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: filter of list orders by status of user (if many add |)
+          required: false
+          example: "1|2"
+          schema:
+            type: string
+        - name: productId
+          in: query
+          description: filter of list orders by productId of user (if many add |)
+          required: false
+          example: "1|2"
+          schema:
+            type: string
+        - name: cityId
+          in: query
+          description: filter of list orders by cityId of user (if many add |)
+          required: false
+          example: "1|2"
           schema:
             type: string
       responses:
@@ -2702,6 +3288,18 @@ paths:
           example: "created asc"
           schema:
             type: string
+        - name: userId
+          in: query
+          description: filter of list reviews by Id of user (filter multiple |)
+          required: false
+          schema:
+            type: string
+        - name: productId
+          in: query
+          description: sort of list reviews by id of product (filter multiple |)
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: successful operation
@@ -2852,6 +3450,97 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
+
+  /api/reviews/me/{reviewId}:
+    put:
+      tags:
+        - reviews
+      summary: Update an existing my review
+      description: Update an existing my review
+      operationId: updateReview
+      parameters:
+        - name: reviewId
+          in: path
+          description: review id of review updated
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent review in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Review"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/Review"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Review"
+        required: true
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - reviews
+      summary: Delete myb review 
+      description: Try delete my review by id of you
+      operationId: deleteReview
+      parameters:
+        - name: reviewId
+          in: path
+          description: ID of the review that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
   /api/reviews/delete-many:
     delete:
       tags:
@@ -2892,6 +3581,7 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
+
 components:
   schemas:
     Order:
@@ -3023,6 +3713,12 @@ components:
         typeID:
           type: string
           format: uuid
+        discountStartDate: 
+          type: string
+          format: date-time
+        discountEndDate: 
+          type: string
+          format: date-time
       required:
         - name
         - slug
@@ -3080,6 +3776,24 @@ components:
       xml:
         name: Role
     City:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+      xml:
+        name: City
+    PaymentType:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+      xml:
+        name: City
+    DeliveryType:
       type: object
       properties:
         name:

@@ -1,5 +1,6 @@
 const { CONFIG_MESSAGE_ERRORS } = require("../configs");
 const Review = require("../models/ReviewModel");
+const { buildQuery, preparePaginationAndSorting } = require("../utils");
 
 const createReview = (newReview) => {
   return new Promise(async (resolve, reject) => {
@@ -25,7 +26,6 @@ const createReview = (newReview) => {
     }
   });
 };
-
 const updateReview = (id, data) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -58,6 +58,46 @@ const updateReview = (id, data) => {
   });
 };
 
+const updateReviewMine = (reviewId, userId, data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const checkReview = await Review.findOne({
+        _id: reviewId,
+      });
+      if (checkReview === null) {
+        reject({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "The review is not existed",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      } else if (userId !== checkReview.user) {
+        reject({
+          status: CONFIG_MESSAGE_ERRORS.UNAUTHORIZED.status,
+          message: "Unauthorized",
+          typeError: CONFIG_MESSAGE_ERRORS.UNAUTHORIZED.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+
+      const updatedReview = await Review.findByIdAndUpdate(id, data, {
+        new: true,
+      });
+      resolve({
+        status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
+        message: "Updated review success",
+        typeError: "",
+        data: updatedReview,
+        statusMessage: "Success",
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 const deleteReview = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -69,6 +109,44 @@ const deleteReview = (id) => {
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
           message: "The review is not existed",
           typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+
+      await Review.findByIdAndDelete(id);
+      resolve({
+        status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
+        message: "Deleted review success",
+        typeError: "",
+        data: checkReview,
+        statusMessage: "Success",
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const deleteReviewMine = (reviewId, userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const checkReview = await Review.findOne({
+        _id: reviewId,
+      });
+      if (checkReview === null) {
+        reject({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "The review is not existed",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      } else if (userId !== checkReview.user) {
+        reject({
+          status: CONFIG_MESSAGE_ERRORS.UNAUTHORIZED.status,
+          message: "Unauthorized",
+          typeError: CONFIG_MESSAGE_ERRORS.UNAUTHORIZED.type,
           data: null,
           statusMessage: "Error",
         });
@@ -140,8 +218,8 @@ const getAllReview = (params) => {
       const search = params?.search ?? "";
       const page = params?.page ?? 1;
       const order = params?.order ?? "";
-      const user = params.user ?? "";
-      const product = params.product ?? "";
+      const userId = params.userId ?? "";
+      const productId = params.productId ?? "";
 
       const query = buildQuery(search);
 
@@ -151,20 +229,24 @@ const getAllReview = (params) => {
         order
       );
 
-      if (user) {
-        if (Array.isArray(user)) {
-          query.user = { $in: user };
-        } else {
-          query.user = user;
-        }
+      if (userId) {
+        const userIds = userId
+          ?.split("|")
+          .map((id) => mongoose.Types.ObjectId(id));
+        query.type =
+          userIds.length > 1
+            ? { $in: userIds }
+            : mongoose.Types.ObjectId(userId);
       }
 
-      if (product) {
-        if (Array.isArray(product)) {
-          query.product = { $in: product };
-        } else {
-          query.product = product;
-        }
+      if (productId) {
+        const productIds = productId
+          ?.split("|")
+          .map((id) => mongoose.Types.ObjectId(id));
+        query.type =
+          productIds.length > 1
+            ? { $in: productIds }
+            : mongoose.Types.ObjectId(productId);
       }
 
       if (search) {
@@ -178,17 +260,19 @@ const getAllReview = (params) => {
       const totalPage = Math.ceil(totalCount / limit);
 
       const fieldsToSelect = {
-        status: 1,
-        email: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        roles: 1,
+        content: 1,
+        star: 1,
+        user: 1,
       };
       const allReview = await Review.find(query)
         .skip(startIndex)
         .limit(limit)
         .sort(sortOptions)
-        .select(fieldsToSelect);
+        .select(fieldsToSelect)
+        .populate({
+          path: "user",
+          select: "avatar firstName lastName middleName",
+        });
       resolve({
         status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
         message: "Success",
@@ -213,4 +297,6 @@ module.exports = {
   deleteReview,
   getAllReview,
   deleteManyReview,
+  updateReviewMine,
+  deleteReviewMine,
 };
