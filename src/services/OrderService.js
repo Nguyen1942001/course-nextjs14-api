@@ -3,6 +3,7 @@ const Order = require("../models/OrderProduct");
 const Product = require("../models/ProductModel");
 const EmailService = require("../services/EmailService");
 const { preparePaginationAndSorting, buildQuery } = require("../utils");
+const mongoose = require("mongoose")
 
 const updateProductStock = async (order) => {
   try {

@@ -12,7 +12,7 @@ router.post(
 
 router.get(
   "/",
-  AuthPermission(CONFIG_PERMISSIONS.USER.VIEW),
+  // AuthPermission(CONFIG_PERMISSIONS.USER.VIEW),
   UserController.getAllUser
 );
 

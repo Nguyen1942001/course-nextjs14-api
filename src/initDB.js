@@ -20,7 +20,13 @@ const initializeDB = async () => {
           permissions: [CONFIG_PERMISSIONS.ADMIN],
         });
 
+        const defaultBasicRole = new Role({
+          name: "Basic",
+          permissions: [CONFIG_PERMISSIONS.BASIC],
+        });
+
         await defaultAdminRole.save();
+        await defaultBasicRole.save();
 
         const hash = bcrypt.hashSync("123456789Kha@", 10);
         const roleAdmin = await Role.findOne({ name: "Admin" });

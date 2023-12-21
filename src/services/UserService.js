@@ -2,6 +2,7 @@ const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
 const { CONFIG_MESSAGE_ERRORS } = require("../configs");
 const { isAdminPermission } = require("../utils");
+const mongoose = require("mongoose")
 
 const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
