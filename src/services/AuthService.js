@@ -1,12 +1,53 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("./JwtService");
-const { CONFIG_MESSAGE_ERRORS, CONFIG_PERMISSIONS, CONFIG_USER_TYPE } = require("../configs");
+const {
+  CONFIG_MESSAGE_ERRORS,
+  CONFIG_PERMISSIONS,
+  CONFIG_USER_TYPE,
+} = require("../configs");
 const EmailService = require("../services/EmailService");
 const dotenv = require("dotenv");
 const { addToBlacklist, isAdminPermission } = require("../utils");
 dotenv.config();
 const { OAuth2Client } = require("google-auth-library");
+
+const registerUser = (newUser) => {
+  return new Promise(async (resolve, reject) => {
+    const { email, password } = newUser;
+    try {
+      const existedUser = await User.findOne({
+        email: email,
+      });
+      if (existedUser !== null) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+          message: "The email of user is existed",
+          typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      const hash = bcrypt.hashSync(password, 10);
+      const createdUser = await User.create({
+        email,
+        password: hash,
+        status: 1,
+      });
+      if (createdUser) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
+          message: "Register user success",
+          typeError: "",
+          data: createdUser,
+          statusMessage: "Success",
+        });
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
 
 const loginUser = (userLogin) => {
   return new Promise(async (resolve, reject) => {
@@ -367,7 +408,7 @@ const registerGoogle = (idToken) => {
       const newUser = await User.create({
         email,
         role: [CONFIG_PERMISSIONS.BASIC],
-        userType: CONFIG_USER_TYPE.GOOGLE
+        userType: CONFIG_USER_TYPE.GOOGLE,
       });
       if (newUser) {
         resolve({
@@ -470,7 +511,7 @@ const registerFacebook = (idToken) => {
       const newUser = await User.create({
         email,
         role: [CONFIG_PERMISSIONS.BASIC],
-        userType: CONFIG_USER_TYPE.FACEBOOK
+        userType: CONFIG_USER_TYPE.FACEBOOK,
       });
       if (newUser) {
         resolve({
@@ -557,4 +598,5 @@ module.exports = {
   registerFacebook,
   loginFacebook,
   loginGoogle,
+  registerUser
 };

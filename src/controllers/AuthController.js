@@ -4,6 +4,59 @@ const UserService = require("../services/UserService");
 const { validateRequiredInput } = require("../utils");
 const { CONFIG_MESSAGE_ERRORS } = require("../configs");
 
+const registerUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const REGEX_PASSWORD =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    const isCheckEmail = REGEX_EMAIL.test(email);
+    const isCheckPassword = REGEX_PASSWORD.test(password);
+
+    const requiredFields = validateRequiredInput(req.body, [
+      "email",
+      "password",
+    ]);
+
+    if (requiredFields?.length) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field ${requiredFields.join(", ")} is required`,
+      });
+    } else if (!isCheckEmail) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "INVALID",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: "The field must a email",
+      });
+    } else if (!isCheckPassword) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message:
+          'The password must be at least 6 characters long and include uppercase letters, lowercase letters, numbers, and special characters."',
+      });
+    }
+    const response = await AuthService.registerUser(req.body);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    console.log("e", e);
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -383,6 +436,7 @@ const loginFacebook = async (req, res) => {
 };
 
 module.exports = {
+  registerUser,
   loginUser,
   refreshToken,
   logoutUser,

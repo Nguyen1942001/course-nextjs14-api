@@ -2,12 +2,11 @@ const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
 const { CONFIG_MESSAGE_ERRORS } = require("../configs");
 const { isAdminPermission } = require("../utils");
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
     const {
-      name,
       email,
       password,
       phoneNumber,
@@ -33,7 +32,6 @@ const createUser = (newUser) => {
       }
       const hash = bcrypt.hashSync(password, 10);
       const createdUser = await User.create({
-        name,
         email,
         password: hash,
         phoneNumber: phoneNumber,
