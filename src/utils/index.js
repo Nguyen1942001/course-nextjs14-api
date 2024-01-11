@@ -126,7 +126,10 @@ const isTokenInBlacklist = (token) => {
 };
 
 const isAdminPermission = (permissions) => {
-  return permissions.includes(CONFIG_PERMISSIONS.ADMIN);
+  if(permissions) {
+    return permissions.includes(CONFIG_PERMISSIONS.ADMIN);
+  }
+  return false
 };
 
 const validateDiscountDate = (discount, discountStartDate, discountEndDate) => {

@@ -1,7 +1,7 @@
 const { CONFIG_MESSAGE_ERRORS } = require("../configs");
 const Review = require("../models/ReviewModel");
 const { buildQuery, preparePaginationAndSorting } = require("../utils");
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const createReview = (newReview) => {
   return new Promise(async (resolve, reject) => {
@@ -265,6 +265,30 @@ const getAllReview = (params) => {
         star: 1,
         user: 1,
       };
+
+      if (page === -1 && limit === -1) {
+        const allReview = await Review.find(query)
+          .sort(sortOptions)
+          .select(fieldsToSelect)
+          .populate({
+            path: "user",
+            select: "avatar firstName lastName middleName",
+          });
+
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+          message: "Success",
+          typeError: "",
+          statusMessage: "Success",
+          data: {
+            reviews: allReview,
+            totalPage: 1,
+            totalCount: totalCount,
+          },
+        });
+        return;
+      }
+
       const allReview = await Review.find(query)
         .skip(startIndex)
         .limit(limit)

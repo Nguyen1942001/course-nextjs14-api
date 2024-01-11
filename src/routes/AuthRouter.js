@@ -6,8 +6,10 @@ const { AuthPermission } = require("../middleware/AuthPermission");
 router.post("/login", authController.loginUser);
 router.post("/register", authController.registerUser);
 router.post("/logout", authController.logoutUser);
+
 router.get("/me", AuthPermission("", true), authController.getAuthMe);
 router.put("/me", AuthPermission("", true), authController.updateAuthMe);
+
 router.post("/refresh-token", authController.refreshToken);
 router.patch(
   "/change-password",

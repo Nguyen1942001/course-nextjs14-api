@@ -222,10 +222,10 @@ const changePasswordMe = async (req, res) => {
   try {
     const userId = req.userId;
     const newPassword = req.body.newPassword;
-    const currentPassword = req.body.current;
+    const currentPassword = req.body.currentPassword;
     const requiredFields = validateRequiredInput(
       { currentPassword, newPassword },
-      ["currentPassword", "newPassword "]
+      ["currentPassword", "newPassword"]
     );
     const accessToken = req?.headers?.authorization?.split(" ")[1];
     if (requiredFields?.length) {

@@ -17,12 +17,14 @@ const createProduct = (newProduct) => {
       slug,
     } = newProduct;
     try {
-      const discountStartDate = newProduct.discountStartDate && discount
-        ? newProduct.discountStartDate
-        : null;
-      const discountEndDate = newProduct.discountEndDate && discount
-        ? newProduct.discountEndDate
-        : null;
+      const discountStartDate =
+        newProduct.discountStartDate && discount
+          ? newProduct.discountStartDate
+          : null;
+      const discountEndDate =
+        newProduct.discountEndDate && discount
+          ? newProduct.discountEndDate
+          : null;
       const checkProduct = await Product.findOne({
         slug: slug,
       });
@@ -46,7 +48,7 @@ const createProduct = (newProduct) => {
         discount: Number(discount),
         slug: slug,
         discountStartDate,
-        discountEndDate
+        discountEndDate,
       });
       if (newProduct) {
         resolve({
@@ -225,6 +227,54 @@ const getAllProduct = (params) => {
           name: "$typeInfo.name",
         },
       };
+
+      if (page === -1 && limit === -1) {
+        const allProduct = await Product.aggregate([
+          { $match: query },
+          {
+            $lookup: {
+              from: "reviews",
+              localField: "_id",
+              foreignField: "product",
+              as: "reviews",
+            },
+          },
+          {
+            $addFields: {
+              averageRating: {
+                $ifNull: [{ $avg: "$reviews.star" }, 0],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "producttypes",
+              localField: "type",
+              foreignField: "_id",
+              as: "typeInfo",
+            },
+          },
+          {
+            $unwind: "$typeInfo",
+          },
+          {
+            $project: fieldsToSelect,
+          },
+        ]);
+
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+          message: "Success",
+          typeError: "",
+          statusMessage: "Success",
+          data: {
+            products: allProduct,
+            totalPage: 1,
+            totalCount: totalCount,
+          },
+        });
+        return;
+      }
 
       const pipeline = [
         { $match: query },

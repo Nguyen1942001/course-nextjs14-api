@@ -3,7 +3,7 @@ const Order = require("../models/OrderProduct");
 const Product = require("../models/ProductModel");
 const EmailService = require("../services/EmailService");
 const { preparePaginationAndSorting, buildQuery } = require("../utils");
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const updateProductStock = async (order) => {
   try {
@@ -199,9 +199,9 @@ const cancelOrderDetails = (id, data) => {
 const getAllOrder = () => {
   return new Promise(async (resolve, reject) => {
     try {
-      const limit = params?.limit ?? 10;
+      const limit = +params?.limit ?? 10;
       const search = params?.search ?? "";
-      const page = params?.page ?? 1;
+      const page = +params?.page ?? 1;
       const order = params?.order ?? "";
       const userId = params.userId ?? "";
       const productId = params.productId ?? "";
@@ -260,6 +260,25 @@ const getAllOrder = () => {
         createdAt: 1,
         updatedAt: 1,
       };
+
+      if (page === -1 && limit === -1) {
+        const allOrder = await Order.find(query)
+          .sort(sortOptions)
+          .select(fieldsToSelect);
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+          message: "Success",
+          typeError: "",
+          statusMessage: "Success",
+          data: {
+            orders: allOrder,
+            totalPage: 1,
+            totalCount: totalCount,
+          },
+        });
+        return;
+      }
+
       const allOrder = await Order.find(query)
         .skip(startIndex)
         .limit(limit)

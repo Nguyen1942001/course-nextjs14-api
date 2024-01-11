@@ -145,9 +145,9 @@ const getDetailsDeliveryType = (id) => {
 const getAllDeliveryType = (params) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const limit = params?.limit ?? 10;
+      const limit = +params?.limit ?? 10;
       const search = params?.search ?? "";
-      const page = params?.page ?? 1;
+      const page = +params?.page ?? 1;
       const order = params?.order ?? "";
       const query = {};
       if (search) {
@@ -177,11 +177,31 @@ const getAllDeliveryType = (params) => {
         createdAt: 1,
         updatedAt: 1,
       };
+
+      if (page === -1 && limit === -1) {
+        const allDelivery = await DeliveryType.find(query)
+          .sort(sortOptions)
+          .select(fieldsToSelect);
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+          message: "Success",
+          typeError: "",
+          statusMessage: "Success",
+          data: {
+            deliveryTypes: allDelivery,
+            totalPage: 1,
+            totalCount: totalCount,
+          },
+        });
+        return;
+      }
+
       const allDelivery = await DeliveryType.find(query)
         .skip(startIndex)
         .limit(limit)
         .sort(sortOptions)
         .select(fieldsToSelect);
+
       resolve({
         status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
         message: "Success",

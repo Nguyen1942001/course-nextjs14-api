@@ -11,6 +11,7 @@ const dotenv = require("dotenv");
 const { addToBlacklist, isAdminPermission } = require("../utils");
 dotenv.config();
 const { OAuth2Client } = require("google-auth-library");
+const Role = require("../models/RoleModel");
 
 const registerUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
@@ -18,6 +19,9 @@ const registerUser = (newUser) => {
     try {
       const existedUser = await User.findOne({
         email: email,
+      });
+      const basicRole = await Role.findOne({
+        name: "Basic",
       });
       if (existedUser !== null) {
         resolve({
@@ -33,6 +37,7 @@ const registerUser = (newUser) => {
         email,
         password: hash,
         status: 1,
+        role: basicRole._id
       });
       if (createdUser) {
         resolve({
@@ -116,7 +121,6 @@ const loginUser = (userLogin) => {
 const logoutUser = (res, accessToken) => {
   return new Promise(async (resolve, reject) => {
     try {
-      res.clearCookie("refresh_token");
       addToBlacklist(accessToken);
       resolve({
         status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
@@ -232,8 +236,6 @@ const changePasswordMe = (userId, data, res, accessToken) => {
 
       checkUser.password = hash;
       await checkUser.save();
-      res.clearCookie("refresh_token");
-      addToBlacklist(accessToken);
       resolve({
         status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
         message: "ChangePassword user success",

@@ -70,7 +70,7 @@ const deleteRole = (id) => {
     try {
       const checkRole = await Role.findOne({
         _id: id,
-      })
+      });
       if (checkRole === null) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
@@ -115,9 +115,9 @@ const deleteManyRole = (ids) => {
 const getAllRole = (params) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const limit = params?.limit ?? 10;
+      const limit = +params?.limit ?? 10;
       const search = params?.search ?? "";
-      const page = params?.page ?? 1;
+      const page = +params?.page ?? 1;
       const order = params?.order ?? "";
       const query = {};
       if (search) {
@@ -145,8 +145,26 @@ const getAllRole = (params) => {
 
       const fieldsToSelect = {
         name: 1,
-        permissions: 1
+        permissions: 1,
       };
+      console.log("page", { page, limit });
+
+      if (page === -1 && limit === -1) {
+        const allRole = await Role.find(query).sort(sortOptions).select(fieldsToSelect);
+
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+          message: "Success",
+          typeError: "",
+          statusMessage: "Success",
+          data: {
+            roles: allRole,
+            totalPage: 1,
+            totalCount: totalCount,
+          },
+        });
+        return;
+      }
       const allRole = await Role.find(query)
         .skip(startIndex)
         .limit(limit)
@@ -174,7 +192,7 @@ const getDetailsRole = (id) => {
     try {
       const role = await Role.findOne({
         _id: id,
-      })
+      });
       if (role === null) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
