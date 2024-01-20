@@ -71,7 +71,8 @@ const updateProduct = (id, data) => {
       const checkProduct = await Product.findOne({
         _id: id,
       });
-      if (checkProduct === null) {
+
+      if (!checkProduct) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
           message: "The product is not existed",
@@ -79,6 +80,25 @@ const updateProduct = (id, data) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
+      }
+
+      if (data.slug && data.slug !== checkRole.slug) {
+        const existedName = await Product.findOne({
+          slug: data.slug,
+          _id: { $ne: id },
+        });
+
+        if (existedName !== null) {
+          resolve({
+            status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+            message: "The slug of product is existed",
+            typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+            data: null,
+            statusMessage: "Error",
+          });
+          return;
+        }
       }
 
       const updatedProduct = await Product.findByIdAndUpdate(id, data, {
@@ -439,6 +459,24 @@ const unlikeProduct = (productId, userId) => {
   });
 };
 
+const autoUpdateDiscounts = async () => {
+  const currentDate = new Date();
+
+  try {
+    const productsToUpdate = await Product.find({
+      discountEndDate: { $lte: currentDate },
+      discount: { $gt: 0 },
+    });
+
+    for (const product of productsToUpdate) {
+      product.discount = 0;
+      await product.save();
+    }
+  } catch (error) {
+    console.error("Error updating discounts:", error);
+  }
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -448,4 +486,5 @@ module.exports = {
   deleteManyProduct,
   likeProduct,
   unlikeProduct,
+  autoUpdateDiscounts,
 };

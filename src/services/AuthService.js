@@ -11,7 +11,6 @@ const dotenv = require("dotenv");
 const { addToBlacklist, isAdminPermission } = require("../utils");
 dotenv.config();
 const { OAuth2Client } = require("google-auth-library");
-const Role = require("../models/RoleModel");
 
 const registerUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
@@ -19,9 +18,6 @@ const registerUser = (newUser) => {
     try {
       const existedUser = await User.findOne({
         email: email,
-      });
-      const basicRole = await Role.findOne({
-        name: "Basic",
       });
       if (existedUser !== null) {
         resolve({
@@ -37,7 +33,6 @@ const registerUser = (newUser) => {
         email,
         password: hash,
         status: 1,
-        role: basicRole._id
       });
       if (createdUser) {
         resolve({
@@ -84,7 +79,7 @@ const loginUser = (userLogin) => {
           statusMessage: "Error",
         });
       }
-
+     
       const access_token = await generateToken(
         {
           id: checkUser.id,
@@ -142,7 +137,7 @@ const updateAuthMe = (id, data, isPermission) => {
         _id: id,
       });
 
-      if (checkUser === null) {
+      if (!checkUser) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
           message: "The user is not existed",
@@ -150,18 +145,27 @@ const updateAuthMe = (id, data, isPermission) => {
           data: null,
           statusMessage: "Error",
         });
-      } else if (
-        (data.status !== checkUser.status || data.email !== checkUser.email) &&
-        !isPermission
-      ) {
-        resolve({
-          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
-          message: "You can't change your email or status",
-          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-          data: null,
-          statusMessage: "Error",
+        return;
+      }
+
+      if (data.email && data.email !== checkUser.email) {
+        const existedName = await User.findOne({
+          email: data.email,
+          _id: { $ne: id },
         });
-      } else if (
+
+        if (existedName !== null) {
+          resolve({
+            status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+            message: "The email of user is existed",
+            typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+            data: null,
+            statusMessage: "Error",
+          });
+          return;
+        }
+      }
+      if (
         isAdminPermission(checkUser.permissions) &&
         (data.status !== checkUser.status || data.email !== checkUser.email)
       ) {

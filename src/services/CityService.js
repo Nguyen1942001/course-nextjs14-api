@@ -41,15 +41,36 @@ const updateCity = (id, data) => {
       const checkCity = await City.findOne({
         _id: id,
       });
-      if (checkCity === null) {
+      
+      if (!checkCity) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
-          message: "The city name is not existed",
+          message: "The city is not existed",
           typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
           data: null,
           statusMessage: "Error",
         });
+        return;
       }
+
+      if (data.name && data.name !== checkCity.name) {
+        const existedName = await City.findOne({
+          name: data.name,
+          _id: { $ne: id },
+        });
+
+        if (existedName !== null) {
+          resolve({
+            status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+            message: "The name of city is existed",
+            typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+            data: null,
+            statusMessage: "Error",
+          });
+          return;
+        }
+      }
+
 
       const updatedCity = await City.findByIdAndUpdate(id, data, {
         new: true,

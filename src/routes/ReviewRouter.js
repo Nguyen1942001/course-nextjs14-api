@@ -8,7 +8,7 @@ router.post("/", ReviewController.createReview);
 
 router.put(
   "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.REVIEW.UPDATE),
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.REVIEW.UPDATE),
   ReviewController.updateReview
 );
 
@@ -22,7 +22,7 @@ router.get("/:id", ReviewController.getDetailsReview);
 
 router.delete(
   "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.REVIEW.DELETE),
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.REVIEW.DELETE),
   ReviewController.deleteReview
 );
 
@@ -36,7 +36,7 @@ router.get("/", ReviewController.getAllReview);
 
 router.delete(
   "/delete-many",
-  AuthPermission(CONFIG_PERMISSIONS.REVIEW.DELETE),
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.REVIEW.DELETE),
   ReviewController.deleteMany
 );
 

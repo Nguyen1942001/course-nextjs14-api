@@ -6,13 +6,13 @@ const { CONFIG_PERMISSIONS } = require("../configs");
 
 router.post(
   "/",
-  AuthPermission(CONFIG_PERMISSIONS.PRODUCT.PRODUCT.CREATE),
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.CREATE),
   ProductController.createProduct
 );
 
 router.put(
   "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.PRODUCT.PRODUCT.UPDATE),
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.UPDATE),
   ProductController.updateProduct
 );
 
@@ -20,7 +20,7 @@ router.get("/:id", ProductController.getDetailsProduct);
 
 router.delete(
   "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.PRODUCT.PRODUCT.DELETE),
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.DELETE),
   ProductController.deleteProduct
 );
 
@@ -28,7 +28,7 @@ router.get("/", ProductController.getAllProduct);
 
 router.delete(
   "/delete-many",
-  AuthPermission(CONFIG_PERMISSIONS.PRODUCT.PRODUCT.DELETE),
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.DELETE),
   ProductController.deleteMany
 );
 

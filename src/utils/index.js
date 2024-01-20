@@ -73,7 +73,8 @@ const existedPermissionRole = (permission) => {
       return true;
     };
   }
-  const isChecked = permission.every(function (element) {
+  console.log("permission", {permission})
+  const isChecked = permission?.every(function (element) {
     return getAllValuePermission.includes(element);
   });
   return isChecked;

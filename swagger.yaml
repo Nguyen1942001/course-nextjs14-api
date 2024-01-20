@@ -1208,18 +1208,45 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Update an existent role in the store
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Role"
+              type: object
+              properties:
+                name:
+                  type: string
+                permissions:
+                  type: array
+                  format: string
+                  example: []
+              required:
+                - name
+                - permissions
           application/xml:
             schema:
-              $ref: "#/components/schemas/Role"
+              type: object
+              properties:
+                name:
+                  type: string
+                permissions:
+                  type: array
+                  format: string
+              required:
+                - name
+                - permissions
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/Role"
-        required: true
+              type: object
+              properties:
+                name:
+                  type: string
+                permissions:
+                  type: array
+                  format: string
+              required:
+                - name
+                - permissions
 
       responses:
         "201":
@@ -3828,11 +3855,11 @@ components:
       properties:
         name:
           type: string
-        permission:
+        permissions:
           type: array
-          format: string
       required:
         - name
+        - permissions
       xml:
         name: Role
     City:

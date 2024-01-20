@@ -41,7 +41,8 @@ const updatePaymentType = (id, data) => {
       const checkPayment = await PaymentType.findOne({
         _id: id,
       });
-      if (checkPayment === null) {
+
+      if (!checkPayment) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
           message: "The payment type name is not existed",
@@ -49,6 +50,25 @@ const updatePaymentType = (id, data) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
+      }
+
+      if (data.name && data.name !== checkPayment.name) {
+        const existedName = await PaymentType.findOne({
+          name: data.name,
+          _id: { $ne: id },
+        });
+
+        if (existedName !== null) {
+          resolve({
+            status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+            message: "The payment type name is existed",
+            typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+            data: null,
+            statusMessage: "Error",
+          });
+          return;
+        }
       }
 
       const updatedPayment = await PaymentType.findByIdAndUpdate(id, data, {

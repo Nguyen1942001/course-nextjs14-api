@@ -64,8 +64,7 @@ const updateUser = (id, data) => {
       const checkUser = await User.findOne({
         _id: id,
       });
-
-      if (checkUser === null) {
+      if (!checkUser) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
           message: "The user is not existed",
@@ -73,18 +72,28 @@ const updateUser = (id, data) => {
           data: null,
           statusMessage: "Error",
         });
-      } else if (
-        data.status !== checkUser.status ||
-        data.email !== checkUser.email
-      ) {
-        resolve({
-          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
-          message: "You can't change your email or status",
-          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-          data: null,
-          statusMessage: "Error",
+        return;
+      }
+
+      if (data.email && data.email !== checkUser.email) {
+        const existedName = await User.findOne({
+          email: data.email,
+          _id: { $ne: id },
         });
-      } else if (
+
+        if (existedName !== null) {
+          resolve({
+            status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+            message: "The email of user is existed",
+            typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+            data: null,
+            statusMessage: "Error",
+          });
+          return;
+        }
+      }
+      
+      if (
         isAdminPermission(checkUser.permissions) &&
         (data.status !== checkUser.status || data.email !== checkUser.email)
       ) {

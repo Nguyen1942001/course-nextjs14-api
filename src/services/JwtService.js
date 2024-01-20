@@ -31,7 +31,7 @@ const refreshTokenJwtService = (token) => {
         const access_token = await generateToken(
           {
             id: user?.id,
-            permissions: user?.role?.permissions,
+            permissions: user?.permissions,
           },
           process.env.ACCESS_TOKEN_SECRET,
           process.env.ACCESS_TOKEN_EXPIRE

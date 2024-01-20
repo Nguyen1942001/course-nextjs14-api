@@ -55,16 +55,6 @@ const updateRole = async (req, res) => {
           )} is not contained system`,
           data: null,
         });
-      } else if (
-        dataBody.permissions?.includes(CONFIG_PERMISSIONS.ADMIN) ||
-        dataBody.permissions?.includes(CONFIG_PERMISSIONS.BASIC)
-      ) {
-        return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
-          status: "Error",
-          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-          message: `You can't update permission with admin or basic role`,
-          data: null,
-        });
       }
     }
     const response = await RoleService.updateRole(roleId, req.body);
@@ -76,6 +66,7 @@ const updateRole = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
+    console.log("eee", {e})
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,

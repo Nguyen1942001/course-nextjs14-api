@@ -42,14 +42,34 @@ const updateProductType = (id, data) => {
       const checkProductType = await ProductType.findOne({
         _id: id,
       });
-      if (checkProductType === null) {
+
+      if (!checkProductType) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
-          message: "The product type is not existed",
+          message: "The name of type product is not existed",
           typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
           data: null,
           statusMessage: "Error",
         });
+        return;
+      }
+
+      if (data.name && data.name !== checkProductType.name) {
+        const existedName = await ProductType.findOne({
+          name: data.name,
+          _id: { $ne: id },
+        });
+
+        if (existedName !== null) {
+          resolve({
+            status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+            message: "The name of type product is existed",
+            typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+            data: null,
+            statusMessage: "Error",
+          });
+          return;
+        }
       }
 
       const updatedProductType = await ProductType.findByIdAndUpdate(id, data, {

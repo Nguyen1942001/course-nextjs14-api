@@ -41,14 +41,33 @@ const updateDeliveryType = (id, data) => {
       const checkDelivery = await DeliveryType.findOne({
         _id: id,
       });
-      if (checkDelivery === null) {
+      if (!checkDelivery) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
-          message: "The delivery type is not existed",
+          message: "The type of delivery is not existed",
           typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
           data: null,
           statusMessage: "Error",
         });
+        return;
+      }
+
+      if (data.name && data.name !== checkDelivery.name) {
+        const existedName = await DeliveryType.findOne({
+          name: data.name,
+          _id: { $ne: id },
+        });
+
+        if (existedName !== null) {
+          resolve({
+            status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+            message: "The name of delivery type is existed",
+            typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+            data: null,
+            statusMessage: "Error",
+          });
+          return;
+        }
       }
 
       const updatedDelivery = await DeliveryType.findByIdAndUpdate(id, data, {

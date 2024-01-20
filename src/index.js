@@ -11,6 +11,8 @@ const path = require("path");
 const swaggerUi = require("swagger-ui-express");
 const file = fs.readFileSync(path.resolve("./swagger.yaml"), "utf8");
 const swaggerDocument = YAML.parse(file);
+const schedule = require("node-schedule");
+const { autoUpdateDiscounts } = require("./services/ProductService");
 
 dotenv.config();
 
@@ -35,6 +37,9 @@ mongoose
     console.log(err);
   });
 
+schedule.scheduleJob("0 0 * * *", () => {
+  autoUpdateDiscounts();
+});
 
 app.listen(port, () => {
   console.log("Server is running in port: ", +port);

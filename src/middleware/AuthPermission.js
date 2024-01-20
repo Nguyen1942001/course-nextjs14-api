@@ -47,7 +47,6 @@ const AuthPermission = (permission, isAuthMe, isPublic) => (req, res, next) => {
       return handleUnauthorizedError(res);
     }
   } catch (e) {
-    console.log("e", e);
     return handleUnauthorizedError(res);
   }
 };

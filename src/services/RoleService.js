@@ -1,5 +1,5 @@
 const Role = require("../models/RoleModel");
-const { CONFIG_MESSAGE_ERRORS } = require("../configs");
+const { CONFIG_MESSAGE_ERRORS, CONFIG_PERMISSIONS } = require("../configs");
 
 const createRole = (newRole) => {
   return new Promise(async (resolve, reject) => {
@@ -16,6 +16,7 @@ const createRole = (newRole) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
       }
       const createRole = await Role.create({
         name,
@@ -41,7 +42,7 @@ const updateRole = (id, data) => {
       const checkRole = await Role.findOne({
         _id: id,
       });
-      if (checkRole === null) {
+      if (!checkRole) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
           message: "The role is not existed",
@@ -49,6 +50,40 @@ const updateRole = (id, data) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
+      }
+      if (
+        checkRole.permissions.includes(CONFIG_PERMISSIONS.ADMIN) ||
+        checkRole.permissions.includes(CONFIG_PERMISSIONS.BASIC) ||
+        checkRole.name === "Admin" ||
+        checkRole.name === "Basic"
+      ) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          statusMessage: "Error",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          message: `You can't update permission with admin or basic role`,
+          data: null,
+        });
+        return;
+      }
+
+      if (data.name && data.name !== checkRole.name) {
+        const existedName = await Role.findOne({
+          name: data.name,
+          _id: { $ne: id },
+        });
+
+        if (existedName !== null) {
+          resolve({
+            status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+            message: "The name of role is existed",
+            typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+            data: null,
+            statusMessage: "Error",
+          });
+          return;
+        }
       }
 
       const updatedRole = await Role.findByIdAndUpdate(id, data, { new: true });
@@ -123,7 +158,7 @@ const getAllRole = (params) => {
       if (search) {
         const searchRegex = { $regex: search, $options: "i" };
 
-        query.$or = [{ email: searchRegex }];
+        query.$or = [{ name: searchRegex }];
       }
 
       const totalCount = await Role.countDocuments(query);
@@ -150,7 +185,9 @@ const getAllRole = (params) => {
       console.log("page", { page, limit });
 
       if (page === -1 && limit === -1) {
-        const allRole = await Role.find(query).sort(sortOptions).select(fieldsToSelect);
+        const allRole = await Role.find(query)
+          .sort(sortOptions)
+          .select(fieldsToSelect);
 
         resolve({
           status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
