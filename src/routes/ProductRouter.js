@@ -16,7 +16,13 @@ router.put(
   ProductController.updateProduct
 );
 
-router.get("/:id", ProductController.getDetailsProduct);
+router.get("/public/:id", ProductController.getDetailsProductPublic);
+
+router.get(
+  "/:id",
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.VIEW),
+  ProductController.getDetailsProduct
+);
 
 router.delete(
   "/:id",
@@ -24,24 +30,26 @@ router.delete(
   ProductController.deleteProduct
 );
 
-router.get("/", ProductController.getAllProduct);
+router.get("/public", ProductController.getAllProductPublic);
 
-router.delete(
-  "/delete-many",
-  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.DELETE),
-  ProductController.deleteMany
+router.get(
+  "/",
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.VIEW),
+  ProductController.getAllProduct
 );
 
-router.post(
-  "/like",
-  AuthPermission("", true),
-  ProductController.likeProduct
-);
+router.post("/like", AuthPermission("", true), ProductController.likeProduct);
 
 router.post(
   "/unlike",
   AuthPermission("", true),
   ProductController.unlikeProduct
+);
+
+router.delete(
+  "/delete-many",
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.DELETE),
+  ProductController.deleteMany
 );
 
 module.exports = router;

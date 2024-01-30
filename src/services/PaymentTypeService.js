@@ -6,12 +6,12 @@ const createPaymentType = (paymentType) => {
     const { name } = paymentType;
     try {
       const checkPayment = await PaymentType.findOne({
-        name: name,
+        $or: [{ name: name }, { type: type }],
       });
       if (checkPayment !== null) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
-          message: "The name of payment type is existed",
+          message: "The name or type of payment type is existed",
           typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
           data: null,
           statusMessage: "Error",
@@ -63,6 +63,24 @@ const updatePaymentType = (id, data) => {
           resolve({
             status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
             message: "The payment type name is existed",
+            typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
+            data: null,
+            statusMessage: "Error",
+          });
+          return;
+        }
+      }
+
+      if (data.type && data.type !== checkPayment.type) {
+        const existedType = await PaymentType.findOne({
+          type: data.type,
+          _id: { $ne: id },
+        });
+
+        if (existedType !== null) {
+          resolve({
+            status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
+            message: "The payment type type is existed",
             typeError: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.type,
             data: null,
             statusMessage: "Error",
@@ -195,7 +213,7 @@ const getAllPaymentType = (params) => {
       const fieldsToSelect = {
         name: 1,
         createdAt: 1,
-        updatedAt: 1,
+        type: 1,
       };
 
       if (page === -1 && limit === -1) {

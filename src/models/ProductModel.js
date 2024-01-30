@@ -20,6 +20,11 @@ const productSchema = new mongoose.Schema(
     },
     likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     totalLikes: { type: Number, default: 0 },
+    status: {
+      type: Number,
+      default: 0,
+      enum: [0, 1],
+    },
   },
   {
     timestamps: true,

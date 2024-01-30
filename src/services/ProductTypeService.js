@@ -104,7 +104,7 @@ const deleteProductType = (id) => {
         });
       }
 
-      await Product.findByIdAndDelete(id);
+      await ProductType.findByIdAndDelete(id);
       resolve({
         status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
         message: "Deleted product type success",
@@ -174,7 +174,7 @@ const getAllProductType = (params) => {
       if (search) {
         const searchRegex = { $regex: search, $options: "i" };
 
-        query.$or = [{ email: searchRegex }];
+        query.$or = [{ name: searchRegex },{ slug: searchRegex }];
       }
 
       const totalCount = await ProductType.countDocuments(query);
@@ -196,7 +196,7 @@ const getAllProductType = (params) => {
       const fieldsToSelect = {
         name: 1,
         createdAt: 1,
-        updatedAt: 1,
+        slug: 1,
       };
 
       if (page === -1 && limit === -1) {

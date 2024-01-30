@@ -135,6 +135,34 @@ const getDetailsProduct = async (req, res) => {
   }
 };
 
+const getDetailsProductPublic = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    if (!productId) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field productId is required`,
+      });
+    }
+    const response = await ProductService.getDetailsProductPublic(productId);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
 const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -165,7 +193,7 @@ const deleteProduct = async (req, res) => {
 
 const deleteMany = async (req, res) => {
   try {
-    const ids = req.query.userIds;
+    const ids = req.body.userIds;
     if (!ids || !ids.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
@@ -195,6 +223,27 @@ const getAllProduct = async (req, res) => {
   try {
     const params = req.query;
     const response = await ProductService.getAllProduct(params);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+const getAllProductPublic = async (req, res) => {
+  try {
+    const params = req.query;
+    const response = await ProductService.getAllProductPublic(params);
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({
       typeError,
@@ -283,4 +332,6 @@ module.exports = {
   deleteMany,
   likeProduct,
   unlikeProduct,
+  getDetailsProductPublic,
+  getAllProductPublic
 };

@@ -988,15 +988,18 @@ paths:
       summary: Delete many users by ids
       description: Delete many users by list ids
       operationId: deleteManyUser
-      parameters:
-        - in: query
-          name: userIds
-          schema:
-            type: array
-            items:
-              type: string
-          description: Mảng các ID của items cần xóa
-          required: true
+      requestBody:
+        description: Object chứa mảng id của user cần xóa
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userIds:
+                  type: array
+                  items:
+                    type: string
       responses:
         "201":
           description: successful operation
@@ -1279,15 +1282,18 @@ paths:
       summary: Delete many roles by ids
       description: Delete many roles by list ids
       operationId: deleteManyRole
-      parameters:
-        - in: query
-          name: roleIds
-          schema:
-            type: array
-            items:
-              type: string
-          description: Mảng các ID của items cần xóa
-          required: true
+      requestBody:
+        description: Object chứa mảng id của role cần xóa
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roleIds:
+                  type: array
+                  items:
+                    type: string
       responses:
         "200":
           description: successful operation
@@ -1624,15 +1630,18 @@ paths:
       summary: Delete many product types by ids
       description: Delete many product types by list ids
       operationId: deleteManyProductTypes
-      parameters:
-        - in: query
-          name: productTypeIds
-          schema:
-            type: object
-            items:
-              type: string
-          description: Mảng các ID của items cần xóa
-          required: true
+      requestBody:
+        description: Object chứa mảng id của product type cần xóa
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productTypeIds:
+                  type: array
+                  items:
+                    type: string
       responses:
         "200":
           description: successful operation
@@ -1905,15 +1914,18 @@ paths:
       summary: Delete many cities by ids
       description: Delete many cities by list ids
       operationId: deleteManyCities
-      parameters:
-        - in: query
-          name: cityIds
-          schema:
-            type: object
-            items:
-              type: string
-          description: Mảng các ID của items cần xóa
-          required: true
+      requestBody:
+        description: Object chứa mảng id của city cần xóa
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cityIds:
+                  type: array
+                  items:
+                    type: string
       responses:
         "201":
           description: successful operation
@@ -2173,15 +2185,18 @@ paths:
       summary: Delete many delivery types by ids
       description: Delete many delivery types by list ids
       operationId: deleteManyDeliveryTypes
-      parameters:
-        - in: query
-          name: deliveryTypeIds
-          schema:
-            type: object
-            items:
-              type: string
-          description: Mảng các ID của items cần xóa
-          required: true
+      requestBody:
+        description: Object chứa mảng id của delivery type cần xóa
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deliveryTypeIds:
+                  type: array
+                  items:
+                    type: string
       responses:
         "201":
           description: successful operation
@@ -2441,15 +2456,18 @@ paths:
       summary: Delete many payment types by ids
       description: Delete many payment types by list ids
       operationId: deleteManyPaymentTypes
-      parameters:
-        - in: query
-          name: paymentTypeIds
-          schema:
-            type: object
-            items:
-              type: string
-          description: Mảng các ID của items cần xóa
-          required: true
+      requestBody:
+        description: Object chứa mảng id của payment type cần xóa
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paymentTypeIds:
+                  type: array
+                  items:
+                    type: string
       responses:
         "201":
           description: successful operation
@@ -2572,7 +2590,36 @@ paths:
           required: false
           schema:
             type: string
-       
+        - name: status
+          in: query
+          description: status of product (0 | 1)
+          required: false
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          description: min price of product
+          required: false
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          description: min price of product
+          required: false
+          schema:
+            type: number
+        - name: minStar
+          in: query
+          description: min star of product's review'
+          required: false
+          schema:
+            type: number
+        - name: maxStar
+          in: query
+          description: max star of product's review'
+          required: false
+          schema:
+            type: number
       responses:
         "200":
           description: successful operation
@@ -2587,7 +2634,84 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Product"
-        "201":
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/products/public:
+    get:
+      tags:
+        - products
+      summary: Get all products public (status = 1)
+      description: get all products public  (status = 1)
+      operationId: getAllProductsPublic
+      parameters:
+        - name: limit
+          in: query
+          description: Limit of list products
+          required: false
+          example: 10
+          schema:
+            type: number
+        - name: page
+          in: query
+          description: Page of list products
+          required: false
+          example: 1
+          schema:
+            type: number
+        - name: search
+          in: query
+          description: search of list products
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: sort of list products
+          required: false
+          example: "created asc"
+          schema:
+            type: string
+        - name: productType
+          in: query
+          description: id of type product (if multiple add | )
+          required: false
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          description: min price of product
+          required: false
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          description: min price of product
+          required: false
+          schema:
+            type: number
+        - name: minStar
+          in: query
+          description: min star of product's review'
+          required: false
+          schema:
+            type: number
+        - name: maxStar
+          in: query
+          description: max star of product's review'
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
           description: successful operation
           content:
             application/json:
@@ -2649,16 +2773,18 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
-    delete:
+
+  /api/products/public/{productId}:
+    get:
       tags:
         - products
-      summary: Delete product by ID
-      description: Try delete type by id of product
-      operationId: deleteProducts
+      summary: Get details public product by ID (status = 1)
+      description: Get details public product by id of products  (status = 1)
+      operationId: getProductsById
       parameters:
         - name: productId
           in: path
-          description: ID of the product that needs to be deleted
+          description: ID of product that needs to be fetched
           required: true
           schema:
             type: string
@@ -2676,19 +2802,6 @@ paths:
                 type: object
                 items:
                   $ref: "#/components/schemas/Product"
-        "201":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                items:
-                  $ref: "#/components/schemas/Product"
-            application/xml:
-              schema:
-                type: object
-                items:
-                  $ref: "#/components/schemas/Product"
         "401":
           description: UNAUTHORIZED
         "500":
@@ -2699,56 +2812,7 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
-    put:
-      tags:
-        - products
-      summary: Update an existing product
-      description: Update an existing product by Id
-      operationId: updateProduct
-      parameters:
-        - name: productId
-          in: path
-          description: product id of product updated
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Update an existent product in the store
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Product"
-          application/xml:
-            schema:
-              $ref: "#/components/schemas/Product"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/Product"
-        required: true
-      responses:
-        "201":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                items:
-                  $ref: "#/components/schemas/Product"
-            application/xml:
-              schema:
-                type: object
-                items:
-                  $ref: "#/components/schemas/Product"
-        "401":
-          description: UNAUTHORIZED
-        "500":
-          description: INTERNAL_SERVER_ERROR
-        "409":
-          description: ALREADY_EXIST
-        "400":
-          description: INVALID
-      security:
-        - bearerAuth: []
+
   /api/products/delete-many:
     delete:
       tags:
@@ -2756,15 +2820,18 @@ paths:
       summary: Delete many products by ids
       description: Delete many products by list ids
       operationId: deleteManyProducts
-      parameters:
-        - in: query
-          name: productIds
-          schema:
-            type: array
-            items:
-              type: string
-          description: Mảng các ID của items cần xóa
-          required: true
+      requestBody:
+        description: Object chứa mảng id của product cần xóa
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productIds:
+                  type: array
+                  items:
+                    type: string
       responses:
         "200":
           description: successful operation
@@ -3593,7 +3660,7 @@ paths:
     delete:
       tags:
         - reviews
-      summary: Delete myb review 
+      summary: Delete myb review
       description: Try delete my review by id of you
       operationId: deleteReview
       parameters:
@@ -3635,15 +3702,18 @@ paths:
       summary: Delete many reviews by ids
       description: Delete many reviews by list ids
       operationId: deleteManyReviews
-      parameters:
-        - in: query
-          name: reviewIds
-          schema:
-            type: array
-            items:
-              type: string
-          description: Mảng các ID của items cần xóa
-          required: true
+      requestBody:
+        description: Object chứa mảng id của review cần xóa
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reviewIds:
+                  type: array
+                  items:
+                    type: string
       responses:
         "201":
           description: successful operation
@@ -3800,12 +3870,16 @@ components:
         typeID:
           type: string
           format: uuid
-        discountStartDate: 
+        discountStartDate:
           type: string
           format: date-time
-        discountEndDate: 
+        discountEndDate:
           type: string
           format: date-time
+        status:
+          type: number
+          default: 0
+          enum: [0, 1]
       required:
         - name
         - slug
@@ -3876,19 +3950,25 @@ components:
       properties:
         name:
           type: string
+        type:
+          type: string
       required:
         - name
+        - type
       xml:
-        name: City
+        name: PaymentType
     DeliveryType:
       type: object
       properties:
         name:
           type: string
+        price:
+          type: number
       required:
         - name
+        - price
       xml:
-        name: City
+        name: DeliveryType
   securitySchemes:
     bearerAuth:
       type: http

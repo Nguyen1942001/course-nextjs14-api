@@ -21,12 +21,6 @@ router.get(
   ProductTypeController.getDetailsProductType
 );
 
-router.delete(
-  "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT_TYPE.DELETE),
-  ProductTypeController.deleteProductType
-);
-
 router.get(
   "/",
   ProductTypeController.getAllProductType
@@ -36,6 +30,12 @@ router.delete(
   "/delete-many",
   AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT_TYPE.DELETE),
   ProductTypeController.deleteManyProductType
+);
+
+router.delete(
+  "/:id",
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT_TYPE.DELETE),
+  ProductTypeController.deleteProductType
 );
 
 module.exports = router;

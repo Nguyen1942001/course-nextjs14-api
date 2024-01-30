@@ -192,6 +192,35 @@ const getDetailsProduct = (id) => {
   });
 };
 
+const getDetailsProductPublic = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const checkProduct = await Product.findOne({
+        _id: id,
+        status: 1,
+      });
+      if (checkProduct === null) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "The product is not existed",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      resolve({
+        status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+        message: "Success",
+        typeError: "",
+        data: checkProduct,
+        statusMessage: "Success",
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 const getAllProduct = (params) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -200,6 +229,11 @@ const getAllProduct = (params) => {
       const page = +params?.page ?? 1;
       const order = params?.order ?? "";
       const productType = params?.productType ?? "";
+      const minStar = +params?.minStar || 1;
+      const maxStar = +params?.maxStar || 5;
+      const minPrice = +params?.minPrice || 0;
+      const maxPrice = +params?.maxPrice || Number.MAX_SAFE_INTEGER;
+      const statusFilter = params?.status;
       const query = {};
 
       if (productType) {
@@ -211,11 +245,21 @@ const getAllProduct = (params) => {
             ? { $in: productTypeIds }
             : mongoose.Types.ObjectId(productType);
       }
+
+      if (statusFilter !== undefined) {
+        const statusFilterIds = statusFilter
+          ?.split("|")
+          .map((status) => +status);
+        query.status =
+          statusFilterIds.length > 1 ? { $in: statusFilterIds } : +statusFilter;
+      }
+
       if (search) {
         const searchRegex = { $regex: search, $options: "i" };
 
         query.$or = [{ name: searchRegex }];
       }
+      query.price = { $gte: minPrice, $lte: maxPrice };
 
       const totalCount = await Product.countDocuments(query);
 
@@ -267,6 +311,11 @@ const getAllProduct = (params) => {
             },
           },
           {
+            $match: {
+              "reviews.star": { $gte: minStar, $lte: maxStar },
+            },
+          },
+          {
             $lookup: {
               from: "producttypes",
               localField: "type",
@@ -314,6 +363,187 @@ const getAllProduct = (params) => {
             averageRating: {
               $ifNull: [{ $avg: "$reviews.star" }, 0],
             },
+          },
+        },
+        {
+          $match: {
+            "reviews.star": { $gte: minStar, $lte: maxStar },
+          },
+        },
+        {
+          $lookup: {
+            from: "producttypes",
+            localField: "type",
+            foreignField: "_id",
+            as: "typeInfo",
+          },
+        },
+        {
+          $unwind: "$typeInfo",
+        },
+        {
+          $project: fieldsToSelect,
+        },
+      ];
+
+      const allProduct = await Product.aggregate(pipeline);
+
+      resolve({
+        status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+        message: "Success",
+        typeError: "",
+        statusMessage: "Success",
+        data: {
+          products: allProduct,
+          totalPage: totalPage,
+          totalCount: totalCount,
+        },
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const getAllProductPublic = (params) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const limit = +params?.limit ?? 10;
+      const search = params?.search ?? "";
+      const page = +params?.page ?? 1;
+      const order = params?.order ?? "";
+      const productType = params?.productType ?? "";
+      const minStar = +params?.minStar || 1;
+      const maxStar = +params?.maxStar || 5;
+      const minPrice = +params?.minPrice || 0;
+      const maxPrice = +params?.maxPrice || Number.MAX_SAFE_INTEGER;
+      const query = {};
+      query.status = 1;
+
+      if (productType) {
+        const productTypeIds = productType
+          ?.split("|")
+          .map((id) => mongoose.Types.ObjectId(id));
+        query.type =
+          productTypeIds.length > 1
+            ? { $in: productTypeIds }
+            : mongoose.Types.ObjectId(productType);
+      }
+
+      if (search) {
+        const searchRegex = { $regex: search, $options: "i" };
+
+        query.$or = [{ name: searchRegex }];
+      }
+      query.price = { $gte: minPrice, $lte: maxPrice };
+
+      const totalCount = await Product.countDocuments(query);
+
+      const totalPage = Math.ceil(totalCount / limit);
+
+      const startIndex = (page - 1) * limit;
+
+      let sortOptions = {};
+      if (order) {
+        const orderFields = order
+          .split(",")
+          .map((field) => field.trim().split(" "));
+        orderFields.forEach(([name, direction]) => {
+          sortOptions[name] = direction.toLowerCase() === "asc" ? 1 : -1;
+        });
+      }
+
+      const fieldsToSelect = {
+        image: 1,
+        name: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        price: 1,
+        totalLikes: 1,
+        averageRating: 1,
+        type: 1,
+        type: {
+          id: "$typeInfo._id",
+          name: "$typeInfo.name",
+        },
+      };
+
+      if (page === -1 && limit === -1) {
+        const allProduct = await Product.aggregate([
+          { $match: query },
+          {
+            $lookup: {
+              from: "reviews",
+              localField: "_id",
+              foreignField: "product",
+              as: "reviews",
+            },
+          },
+          {
+            $addFields: {
+              averageRating: {
+                $ifNull: [{ $avg: "$reviews.star" }, 0],
+              },
+            },
+          },
+          {
+            $match: {
+              "reviews.star": { $gte: minStar, $lte: maxStar },
+            },
+          },
+          {
+            $lookup: {
+              from: "producttypes",
+              localField: "type",
+              foreignField: "_id",
+              as: "typeInfo",
+            },
+          },
+          {
+            $unwind: "$typeInfo",
+          },
+          {
+            $project: fieldsToSelect,
+          },
+        ]);
+
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+          message: "Success",
+          typeError: "",
+          statusMessage: "Success",
+          data: {
+            products: allProduct,
+            totalPage: 1,
+            totalCount: totalCount,
+          },
+        });
+        return;
+      }
+
+      const pipeline = [
+        { $match: query },
+        { $sort: sortOptions },
+        { $skip: startIndex },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "reviews",
+            localField: "_id",
+            foreignField: "product",
+            as: "reviews",
+          },
+        },
+        {
+          $addFields: {
+            averageRating: {
+              $ifNull: [{ $avg: "$reviews.star" }, 0],
+            },
+          },
+        },
+        {
+          $match: {
+            "reviews.star": { $gte: minStar, $lte: maxStar },
           },
         },
         {
@@ -486,5 +716,6 @@ module.exports = {
   deleteManyProduct,
   likeProduct,
   unlikeProduct,
-  autoUpdateDiscounts,
+  getDetailsProductPublic,
+  getAllProductPublic
 };

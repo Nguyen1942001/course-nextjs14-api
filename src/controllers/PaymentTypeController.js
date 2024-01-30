@@ -1,16 +1,26 @@
-const { CONFIG_MESSAGE_ERRORS } = require("../configs");
+const { CONFIG_MESSAGE_ERRORS, PAYMENT_TYPES } = require("../configs");
 const { validateRequiredInput } = require("../utils");
 const PaymentTypeService = require("../services/PaymentTypeService");
 
 const createPaymentType = async (req, res) => {
   try {
     const requiredFields = validateRequiredInput(req.body, ["name"]);
-
+    const { type } = req.body;
     if (requiredFields?.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
         typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
         message: `The field ${requiredFields.join(", ")} is required`,
+        data: null,
+      });
+    }
+    if (!Object.values(PAYMENT_TYPES).includes(type)) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `Invalid payment type. Allowed types are: ${Object.values(
+          PAYMENT_TYPES
+        ).join(", ")}`,
         data: null,
       });
     }
@@ -35,11 +45,33 @@ const createPaymentType = async (req, res) => {
 const updatePaymentType = async (req, res) => {
   try {
     const paymentTypeId = req.params.id;
+    const { type } = req.body;
+
+    const requiredFields = validateRequiredInput(req.body, ["name"]);
+
+    if (requiredFields?.length) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field ${requiredFields.join(", ")} is required`,
+        data: null,
+      });
+    }
     if (!paymentTypeId) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
         typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
         message: `The field paymentTypeId is required`,
+      });
+    }
+    if (!Object.values(PAYMENT_TYPES).includes(type)) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `Invalid payment type. Allowed types are: ${Object.values(
+          PAYMENT_TYPES
+        ).join(", ")}`,
+        data: null,
       });
     }
     const response = await PaymentTypeService.updatePaymentType(
@@ -123,7 +155,7 @@ const deletePaymentType = async (req, res) => {
 
 const deleteMany = async (req, res) => {
   try {
-    const ids = req.query.paymentTypeIds;
+    const ids = req.body.paymentTypeIds;
     if (!ids || !ids.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",

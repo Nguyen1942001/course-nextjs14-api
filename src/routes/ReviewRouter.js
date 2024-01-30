@@ -20,10 +20,14 @@ router.put(
 
 router.get("/:id", ReviewController.getDetailsReview);
 
+
+
+router.get("/", ReviewController.getAllReview);
+
 router.delete(
-  "/:id",
+  "/delete-many",
   AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.REVIEW.DELETE),
-  ReviewController.deleteReview
+  ReviewController.deleteMany
 );
 
 router.delete(
@@ -32,12 +36,10 @@ router.delete(
   ReviewController.deleteReview
 );
 
-router.get("/", ReviewController.getAllReview);
-
 router.delete(
-  "/delete-many",
+  "/:id",
   AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.REVIEW.DELETE),
-  ReviewController.deleteMany
+  ReviewController.deleteReview
 );
 
 module.exports = router;

@@ -121,7 +121,7 @@ const deleteUser = async (req, res) => {
 
 const deleteMany = async (req, res) => {
   try {
-    const ids = req.query.userIds;
+    const ids = req.body.userIds;
     if (!ids || !ids.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
@@ -159,7 +159,7 @@ const getAllUser = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
-    console.log("e", {e})
+    console.log("ee", {e})
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,

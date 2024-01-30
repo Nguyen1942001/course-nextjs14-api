@@ -120,6 +120,7 @@ const deleteCity = (id) => {
 
 const deleteManyCities = (ids) => {
   return new Promise(async (resolve, reject) => {
+    console.log("check")
     try {
       await City.deleteMany({ _id: ids });
       resolve({
@@ -130,6 +131,7 @@ const deleteManyCities = (ids) => {
         statusMessage: "Success",
       });
     } catch (e) {
+      console.log("eeeeeeee", {e})
       reject(e);
     }
   });

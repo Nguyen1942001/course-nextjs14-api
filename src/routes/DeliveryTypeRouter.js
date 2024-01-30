@@ -18,18 +18,18 @@ router.put(
 
 router.get("/:id", DeliveryTypeController.getDetailsDeliveryType);
 
-router.delete(
-  "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.SETTING.DELIVERY_TYPE.DELETE),
-  DeliveryTypeController.deleteDeliveryType
-);
-
 router.get("/", DeliveryTypeController.getAllDeliveryType);
 
 router.delete(
   "/delete-many",
   AuthPermission(CONFIG_PERMISSIONS.SETTING.DELIVERY_TYPE.DELETE),
   DeliveryTypeController.deleteMany
+);
+
+router.delete(
+  "/:id",
+  AuthPermission(CONFIG_PERMISSIONS.SETTING.DELIVERY_TYPE.DELETE),
+  DeliveryTypeController.deleteDeliveryType
 );
 
 module.exports = router;

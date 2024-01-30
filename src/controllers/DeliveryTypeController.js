@@ -4,13 +4,21 @@ const DeliveryTypeService = require("../services/DeliveryTypeService");
 
 const createDeliveryType = async (req, res) => {
   try {
-    const requiredFields = validateRequiredInput(req.body, ["name"]);
+    const requiredFields = validateRequiredInput(req.body, ["name", "price"]);
 
     if (requiredFields?.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
         typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
         message: `The field ${requiredFields.join(", ")} is required`,
+        data: null,
+      });
+    }
+    if (req?.body?.price < 1000) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: "The price must be at least 1000k",
         data: null,
       });
     }
@@ -40,6 +48,24 @@ const updateDeliveryType = async (req, res) => {
         status: "Error",
         typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
         message: `The field deliveryTypeId is required`,
+      });
+    }
+    const requiredFields = validateRequiredInput(req.body, ["name", "price"]);
+
+    if (requiredFields?.length) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field ${requiredFields.join(", ")} is required`,
+        data: null,
+      });
+    }
+    if (req?.body?.price < 1000) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: "The price must be at least 1000",
+        data: null,
       });
     }
     const response = await DeliveryTypeService.updateDeliveryType(
@@ -123,7 +149,7 @@ const deleteDeliveryType = async (req, res) => {
 
 const deleteMany = async (req, res) => {
   try {
-    const ids = req.query.deliveryTypeIds;
+    const ids = req.body.deliveryTypeIds;
     if (!ids || !ids.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",

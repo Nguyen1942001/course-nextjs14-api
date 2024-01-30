@@ -43,7 +43,7 @@ const updateProductType = async (req, res) => {
       });
     }
     const response = await ProductTypeService.updateProductType(
-      productId,
+      productTypeId,
       req.body
     );
     const { data, status, typeError, message, statusMessage } = response;
@@ -112,6 +112,7 @@ const deleteProductType = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
+    console.log("eeee", {e})
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,
@@ -123,7 +124,7 @@ const deleteProductType = async (req, res) => {
 
 const deleteManyProductType = async (req, res) => {
   try {
-    const ids = req.query.productTypeIds;
+    const ids = req.body.productTypeIds;
     if (!ids || !ids.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",

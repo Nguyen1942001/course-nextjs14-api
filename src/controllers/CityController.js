@@ -123,7 +123,7 @@ const deleteCity = async (req, res) => {
 
 const deleteMany = async (req, res) => {
   try {
-    const ids = req.query.cityIds;
+    const ids = req.body.cityIds;
     if (!ids || !ids.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
@@ -140,7 +140,7 @@ const deleteMany = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
-    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+    return res.status(200).json({
       message: "Internal Server Error",
       data: null,
       status: "Error",

@@ -18,11 +18,6 @@ router.put(
 
 router.get("/:id", PaymentTypeController.getDetailsPaymentType);
 
-router.delete(
-  "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.SETTING.PAYMENT_TYPE.DELETE),
-  PaymentTypeController.deletePaymentType
-);
 
 router.get("/", PaymentTypeController.getAllPaymentType);
 
@@ -30,6 +25,12 @@ router.delete(
   "/delete-many",
   AuthPermission(CONFIG_PERMISSIONS.SETTING.PAYMENT_TYPE.DELETE),
   PaymentTypeController.deleteMany
+);
+
+router.delete(
+  "/:id",
+  AuthPermission(CONFIG_PERMISSIONS.SETTING.PAYMENT_TYPE.DELETE),
+  PaymentTypeController.deletePaymentType
 );
 
 module.exports = router;

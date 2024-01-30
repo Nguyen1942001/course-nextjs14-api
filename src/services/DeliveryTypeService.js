@@ -3,7 +3,7 @@ const DeliveryType = require("../models/DeliveryType");
 
 const createDeliveryType = (newType) => {
   return new Promise(async (resolve, reject) => {
-    const { name } = newType;
+    const { name,price } = newType;
     try {
       const checkDelivery = await DeliveryType.findOne({
         name: name,
@@ -19,6 +19,7 @@ const createDeliveryType = (newType) => {
       }
       const createdDeliveryType = await DeliveryType.create({
         name,
+        price
       });
       if (createdDeliveryType) {
         resolve({
@@ -194,7 +195,7 @@ const getAllDeliveryType = (params) => {
       const fieldsToSelect = {
         name: 1,
         createdAt: 1,
-        updatedAt: 1,
+        price: 1,
       };
 
       if (page === -1 && limit === -1) {

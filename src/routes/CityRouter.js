@@ -18,18 +18,18 @@ router.put(
 
 router.get("/:id", CityController.getDetailsCity);
 
-router.delete(
-  "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.SETTING.CITY.DELETE),
-  CityController.deleteCity
-);
-
 router.get("/", CityController.getAllCity);
 
 router.delete(
   "/delete-many",
   AuthPermission(CONFIG_PERMISSIONS.SETTING.CITY.DELETE),
   CityController.deleteMany
+);
+
+router.delete(
+  "/:id",
+  AuthPermission(CONFIG_PERMISSIONS.SETTING.CITY.DELETE),
+  CityController.deleteCity
 );
 
 module.exports = router;

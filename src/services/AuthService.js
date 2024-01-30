@@ -79,7 +79,7 @@ const loginUser = (userLogin) => {
           statusMessage: "Error",
         });
       }
-     
+
       const access_token = await generateToken(
         {
           id: checkUser.id,
@@ -178,7 +178,13 @@ const updateAuthMe = (id, data, isPermission) => {
         });
       }
 
-      const updatedUser = await User.findByIdAndUpdate(id, data, { new: true });
+      const updatedUser = await User.findByIdAndUpdate(id, data, { new: true })
+        .select("-password")
+        .populate({
+          path: "role",
+          select: "name permissions",
+        })
+        .lean();
       resolve({
         status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
         message: "Updated user success",
@@ -604,5 +610,5 @@ module.exports = {
   registerFacebook,
   loginFacebook,
   loginGoogle,
-  registerUser
+  registerUser,
 };

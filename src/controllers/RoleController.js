@@ -105,7 +105,7 @@ const deleteRole = async (req, res) => {
 
 const deleteManyRole = async (req, res) => {
   try {
-    const ids = req.query.roleIds;
+    const ids = req.body.roleIds;
     if (!ids || !ids.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",

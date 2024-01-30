@@ -155,7 +155,7 @@ const deleteReviewMine = async (req, res) => {
 
 const deleteMany = async (req, res) => {
   try {
-    const ids = req.query.reviewIds;
+    const ids = req.body.reviewIds;
     if (!ids || !ids.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",

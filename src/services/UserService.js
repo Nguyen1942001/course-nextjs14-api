@@ -12,6 +12,7 @@ const createUser = (newUser) => {
       phoneNumber,
       address,
       city,
+      role,
       firstName,
       lastName,
       middleName,
@@ -31,18 +32,24 @@ const createUser = (newUser) => {
         });
       }
       const hash = bcrypt.hashSync(password, 10);
-      const createdUser = await User.create({
+      const userCreate = {
         email,
         password: hash,
         phoneNumber: phoneNumber,
         address,
-        city,
         firstName,
         lastName,
         middleName,
         avatar,
         status: 1,
-      });
+      };
+      if (city) {
+        userCreate.city = city;
+      }
+      if (role) {
+        userCreate.role = role;
+      }
+      const createdUser = await User.create(userCreate);
       if (createdUser) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
@@ -92,7 +99,7 @@ const updateUser = (id, data) => {
           return;
         }
       }
-      
+
       if (
         isAdminPermission(checkUser.permissions) &&
         (data.status !== checkUser.status || data.email !== checkUser.email)
@@ -105,7 +112,29 @@ const updateUser = (id, data) => {
           statusMessage: "Error",
         });
       }
-      const updatedUser = await User.findByIdAndUpdate(id, data, { new: true });
+      const dataUser = {
+        email: data.email,
+        password: checkUser.password,
+        phoneNumber: data.phoneNumber,
+        address: data.address,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        middleName: data.middleName,
+        city: checkUser.city,
+        role: checkUser.role,
+        middleName: data.middleName,
+        avatar: data.avatar,
+        status: data.status,
+      };
+      if (data.city) {
+        dataUser.city = data.city;
+      }
+      if (data.role) {
+        dataUser.role = data.role;
+      }
+      const updatedUser = await User.findByIdAndUpdate(id, dataUser, {
+        new: true,
+      });
       resolve({
         status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
         message: "Updated user success",
@@ -181,32 +210,36 @@ const getAllUser = (params) => {
       if (search) {
         const searchRegex = { $regex: search, $options: "i" };
 
-        query.$or = [{ email: searchRegex }];
+        query.$or = [
+          { email: searchRegex },
+          { firstName: searchRegex },
+          { lastName: searchRegex },
+          { middleName: searchRegex },
+        ];
       }
 
       if (roleId) {
         const roleIds = roleId
           ?.split("|")
           .map((id) => mongoose.Types.ObjectId(id));
-        query.type =
+        query.role =
           roleIds.length > 1
             ? { $in: roleIds }
             : mongoose.Types.ObjectId(roleId);
       }
-
       if (cityId) {
         const cityIds = cityId
           ?.split("|")
           .map((id) => mongoose.Types.ObjectId(id));
-        query.type =
+        query.city =
           cityIds.length > 1
             ? { $in: cityIds }
             : mongoose.Types.ObjectId(cityId);
       }
 
       if (status) {
-        const status = status?.split("|").map((id) => id);
-        query.type = { $in: status };
+        const statusId = status?.split("|").map((id) => id);
+        query.status = { $in: statusId };
       }
 
       const totalCount = await User.countDocuments(query);
@@ -229,15 +262,24 @@ const getAllUser = (params) => {
       const fieldsToSelect = {
         status: 1,
         email: 1,
+        role: 1,
         createdAt: 1,
-        updatedAt: 1,
-        roles: 1,
+        firstName: 1,
+        lastName: 1,
+        middleName: 1,
+        city: 1,
+        phoneNumber: 1,
       };
 
       if (page === -1 && limit === -1) {
         const allUser = await User.find(query)
           .sort(sortOptions)
-          .select(fieldsToSelect);
+          .select(fieldsToSelect)
+          .populate({
+            path: "role",
+            select: "name permissions",
+          })
+          .lean();
 
         resolve({
           status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
@@ -250,18 +292,26 @@ const getAllUser = (params) => {
             totalCount: totalCount,
           },
         });
+
         return;
       }
-
+      console.log("query", { query });
       const allUser = await User.find(query)
         .skip(startIndex)
         .limit(limit)
         .sort(sortOptions)
         .select(fieldsToSelect)
-        .populate({
-          path: "role",
-          select: "name permissions",
-        });
+        .populate([
+          {
+            path: "role",
+            select: "name permissions",
+          },
+          {
+            path: "city",
+            select: "name",
+          },
+        ])
+        .lean();
 
       resolve({
         status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
@@ -290,7 +340,9 @@ const getDetailsUser = (id) => {
         .populate({
           path: "role",
           select: "name permissions",
-        });
+        })
+        .lean();
+
       if (user === null) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
@@ -299,6 +351,7 @@ const getDetailsUser = (id) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
       }
       resolve({
         status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,

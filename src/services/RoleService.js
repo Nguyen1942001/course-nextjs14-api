@@ -182,7 +182,7 @@ const getAllRole = (params) => {
         name: 1,
         permissions: 1,
       };
-      console.log("page", { page, limit });
+
 
       if (page === -1 && limit === -1) {
         const allRole = await Role.find(query)
