@@ -1623,6 +1623,7 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
+
   /api/product-types/delete-many:
     delete:
       tags:
@@ -2590,99 +2591,15 @@ paths:
           required: false
           schema:
             type: string
+        - name: productLocation
+          in: query
+          description: id of location product (if multiple add | )
+          required: false
+          schema:
+              type: string
         - name: status
           in: query
           description: status of product (0 | 1)
-          required: false
-          schema:
-            type: string
-        - name: minPrice
-          in: query
-          description: min price of product
-          required: false
-          schema:
-            type: number
-        - name: maxPrice
-          in: query
-          description: min price of product
-          required: false
-          schema:
-            type: number
-        - name: minStar
-          in: query
-          description: min star of product's review'
-          required: false
-          schema:
-            type: number
-        - name: maxStar
-          in: query
-          description: max star of product's review'
-          required: false
-          schema:
-            type: number
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
-        "401":
-          description: UNAUTHORIZED
-        "500":
-          description: INTERNAL_SERVER_ERROR
-        "409":
-          description: ALREADY_EXIST
-        "400":
-          description: INVALID
-      security:
-        - bearerAuth: []
-
-  /api/products/public:
-    get:
-      tags:
-        - products
-      summary: Get all products public (status = 1)
-      description: get all products public  (status = 1)
-      operationId: getAllProductsPublic
-      parameters:
-        - name: limit
-          in: query
-          description: Limit of list products
-          required: false
-          example: 10
-          schema:
-            type: number
-        - name: page
-          in: query
-          description: Page of list products
-          required: false
-          example: 1
-          schema:
-            type: number
-        - name: search
-          in: query
-          description: search of list products
-          required: false
-          schema:
-            type: string
-        - name: order
-          in: query
-          description: sort of list products
-          required: false
-          example: "created asc"
-          schema:
-            type: string
-        - name: productType
-          in: query
-          description: id of type product (if multiple add | )
           required: false
           schema:
             type: string
@@ -2773,6 +2690,255 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
+    put:
+      tags:
+        - products
+      summary: Update an existing produc
+      description: Update an existing product by Id
+      operationId: updateProduct
+      parameters:
+        - name: productId
+          in: path
+          description: product id of product updated
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent product in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/Product"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Product"
+        required: true
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Product"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - products
+      summary: Delete product by ID
+      description: Try delete product by id of products
+      operationId: deleteProduct
+      parameters:
+        - name: productId
+          in: path
+          description: ID of the product that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Product"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/products/public:
+    get:
+      tags:
+        - products
+      summary: Get all products public (status = 1)
+      description: get all products public  (status = 1)
+      operationId: getAllProductsPublic
+      parameters:
+        - name: limit
+          in: query
+          description: Limit of list products
+          required: false
+          example: 10
+          schema:
+            type: number
+        - name: page
+          in: query
+          description: Page of list products
+          required: false
+          example: 1
+          schema:
+            type: number
+        - name: search
+          in: query
+          description: search of list products
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: sort of list products
+          required: false
+          example: "created asc"
+          schema:
+            type: string
+        - name: productType
+          in: query
+          description: id of type product (if multiple add | )
+          required: false
+          schema:
+            type: string
+        - name: productLocation
+          in: query
+          description: id of location product (if multiple add | )
+          required: false
+          schema:
+              type: string
+        - name: minPrice
+          in: query
+          description: min price of product
+          required: false
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          description: min price of product
+          required: false
+          schema:
+            type: number
+        - name: minStar
+          in: query
+          description: min star of product's review'
+          required: false
+          schema:
+            type: number
+        - name: maxStar
+          in: query
+          description: max star of product's review'
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/products/related:
+    get:
+      tags:
+        - products
+      summary: Get all related products public (status = 1)
+      description: get all related products public (status = 1)
+      operationId: getAllProductsRelatedPublic
+      parameters:
+        - name: slug
+          in: query
+          description: slug of product
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limit of list products
+          required: false
+          example: 10
+          schema:
+            type: number
+        - name: page
+          in: query
+          description: Page of list products
+          required: false
+          example: 1
+          schema:
+            type: number
+        - name: search
+          in: query
+          description: search of list products
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: sort of list products
+          required: false
+          example: "created asc"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
 
   /api/products/public/{productId}:
     get:
@@ -2780,7 +2946,7 @@ paths:
         - products
       summary: Get details public product by ID (status = 1)
       description: Get details public product by id of products  (status = 1)
-      operationId: getProductsById
+      operationId: getProductPublicById
       parameters:
         - name: productId
           in: path
@@ -2996,6 +3162,112 @@ paths:
       security:
         - bearerAuth: []
 
+  /api/products/liked/me:
+    get:
+      tags:
+        - products
+      summary: Get list product of user liked
+      description: Get list product of user liked
+      operationId: getProductLiked
+      parameters:
+        - name: limit
+          in: query
+          description: Limit of list liked products
+          required: false
+          example: 10
+          schema:
+            type: number
+        - name: page
+          in: query
+          description: Page of list liked products
+          required: false
+          example: 1
+          schema:
+            type: number
+        - name: search
+          in: query
+          description: search of list liked products
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Product"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/products/viewed/me:
+    get:
+      tags:
+        - products
+      summary: Get list product of user viewed
+      description: Get list product of user viewed
+      operationId: getProductViewed
+      parameters:
+        - name: limit
+          in: query
+          description: Limit of list viewed products
+          required: false
+          example: 10
+          schema:
+            type: number
+        - name: page
+          in: query
+          description: Page of list viewed products
+          required: false
+          example: 1
+          schema:
+            type: number
+        - name: search
+          in: query
+          description: search of list viewed products
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Product"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
   /api/orders:
     post:
       tags:
@@ -3139,13 +3411,13 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
-  /api/orders/all:
+  /api/orders/me:
     get:
       tags:
         - orders
       summary: Get all orders of system
       description: Get all orders of system
-      operationId: getAllOrderSystem
+      operationId: getAllOrderOfMe
       parameters:
         - name: limit
           in: query
@@ -3157,6 +3429,13 @@ paths:
         - name: page
           in: query
           description: Page of list orders  of system
+          required: false
+          example: 1
+          schema:
+            type: number
+        - name: status
+          in: query
+          description: status of orders (add | if multiple)
           required: false
           example: 1
           schema:
@@ -3176,6 +3455,126 @@ paths:
             type: string
       responses:
         "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Order"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Order"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+  
+  /api/orders/me/{orderId}:
+    get:
+      tags:
+        - orders
+      summary: Get all orders of me
+      description: Get details orders of me
+      operationId: getDetailOrderOfMe
+      parameters:
+        - name: orderId
+          in: path
+          description: ID of order that needs to be fetched
+          required: true
+          schema:
+            type: string
+
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Order"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Order"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/orders/cancel/{orderId}:
+    post:
+      tags:
+        - orders
+      summary: cancel orders by id
+      description: cancel orders by id
+      operationId: cancelOrder
+      parameters:
+        - name: orderId
+          in: path
+          description: ID of order that needs to be fetched
+          required: true
+          schema:
+            type: string
+
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Order"
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Order"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/orders/me/cancel/{orderId}:
+    post:
+      tags:
+        - orders
+      summary: cancel orders of me
+      description: cancel orders of me
+      operationId: cancelOrder
+      parameters:
+        - name: orderId
+          in: path
+          description: ID of order that needs to be fetched
+          required: true
+          schema:
+            type: string
+
+      responses:
+        "201":
           description: successful operation
           content:
             application/json:
@@ -3227,19 +3626,6 @@ paths:
                 type: object
                 items:
                   $ref: "#/components/schemas/Order"
-        "201":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                items:
-                  $ref: "#/components/schemas/Order"
-            application/xml:
-              schema:
-                type: object
-                items:
-                  $ref: "#/components/schemas/Order"
         "401":
           description: UNAUTHORIZED
         "500":
@@ -3250,6 +3636,7 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
+
     delete:
       tags:
         - orders
@@ -3264,19 +3651,6 @@ paths:
           schema:
             type: string
       responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Order"
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Order"
         "201":
           description: successful operation
           content:
@@ -3364,6 +3738,7 @@ paths:
           description: INVALID
       security:
         - bearerAuth: []
+
   /api/reviews:
     post:
       tags:
@@ -3739,6 +4114,70 @@ paths:
       security:
         - bearerAuth: []
 
+  /api/report/product-type/count:
+    get:
+      tags:
+        - report
+      summary: Get all total count of products
+      description: get all total count products
+      operationId: getCountProductType
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
+  /api/report/all-records/count:
+    get:
+      tags:
+        - report
+      summary: Get all total count of products,users,reviews,orders
+      description: get all total count products,users,reviews,orders
+      operationId: getCountAllRecord
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: UNAUTHORIZED
+        "500":
+          description: INTERNAL_SERVER_ERROR
+        "409":
+          description: ALREADY_EXIST
+        "400":
+          description: INVALID
+      security:
+        - bearerAuth: []
+
 components:
   schemas:
     Order:
@@ -3803,6 +4242,10 @@ components:
         deliveredAt:
           type: string
           format: date-time
+        status:
+          type: number
+          default: 0
+          enum: [0, 1]
       required:
         - orderItems
         - shippingAddress
@@ -3841,6 +4284,30 @@ components:
           type: number
           default: 1
           enum: [0, 1]
+        userType:
+          type: number
+          default: 3
+          enum: [1, 2, 3]
+        addresses:
+          type: array
+          items:
+            type: object
+            properties:
+              firstName:
+                type: string
+              lastName:
+                type: string
+              middleName:
+                type: string
+              phoneNumber:
+                type: string
+              price:
+                type: number
+              discount:
+                type: number
+              product:
+                type: string
+                format: uuid
       required:
         - email
         - password
@@ -3855,8 +4322,9 @@ components:
           type: string
         image:
           type: string
-        type:
+        location:
           type: string
+          format: uuid
         price:
           type: number
         countInStock:
@@ -3867,7 +4335,7 @@ components:
           type: number
         sold:
           type: number
-        typeID:
+        type:
           type: string
           format: uuid
         discountStartDate:
@@ -3887,7 +4355,7 @@ components:
         - type
         - price
         - countInStock
-        - typeID
+        - location
       xml:
         name: Product
     ProductType:

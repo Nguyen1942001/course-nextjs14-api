@@ -73,7 +73,7 @@ const existedPermissionRole = (permission) => {
       return true;
     };
   }
-  console.log("permission", {permission})
+  console.log("permission", { permission });
   const isChecked = permission?.every(function (element) {
     return getAllValuePermission.includes(element);
   });
@@ -107,7 +107,7 @@ const getBlacklist = () => {
   }
 };
 
-const addToBlacklist = (token) => {
+const addToBlacklist = async (token) => {
   try {
     const blacklist = getBlacklist();
     blacklist.push({
@@ -116,8 +116,16 @@ const addToBlacklist = (token) => {
         Date.now() + parseTimeToMilliseconds(process.env.ACCESS_TOKEN_EXPIRE),
     });
 
-    fs.writeFileSync(BLACKLIST_FILE, JSON.stringify(blacklist), "utf8");
-  } catch (error) {}
+    await new Promise((resolve, reject) => {
+      fs.writeFile(BLACKLIST_FILE, JSON.stringify(blacklist), "utf8", (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  } catch (error) {
+    console.log("Error adding token to blacklist", error);
+    throw error;
+  }
 };
 
 const isTokenInBlacklist = (token) => {
@@ -127,10 +135,10 @@ const isTokenInBlacklist = (token) => {
 };
 
 const isAdminPermission = (permissions) => {
-  if(permissions) {
+  if (permissions) {
     return permissions.includes(CONFIG_PERMISSIONS.ADMIN);
   }
-  return false
+  return false;
 };
 
 const validateDiscountDate = (discount, discountStartDate, discountEndDate) => {
@@ -142,7 +150,6 @@ const validateDiscountDate = (discount, discountStartDate, discountEndDate) => {
       };
     }
 
-    
     if (discountStartDate.getTime() < new Date().setHours(0, 0, 0, 0)) {
       return {
         isValid: false,

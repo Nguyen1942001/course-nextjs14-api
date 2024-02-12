@@ -2,8 +2,7 @@ const mongoose = require("mongoose");
 
 const citySchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, unique: true },
-    price: { type: Number, required: true },
+    name: { type: String, required: true, unique: true }
   },
   {
     timestamps: true,

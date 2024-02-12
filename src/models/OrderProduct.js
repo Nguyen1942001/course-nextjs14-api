@@ -46,10 +46,16 @@ const orderSchema = new mongoose.Schema(
       enum: [0, 1],
     },
     paidAt: { type: Date },
+    deliveryAt: { type: Date },
     isDelivered: {
       type: Number,
       default: 0,
       enum: [0, 1],
+    },
+    status: {
+      type: String,
+      enum: [0, 1, 2, 3], // 0: wait payment, 1: wait delivery, 2: done, 3, cancel
+      default: 0
     },
   },
   {

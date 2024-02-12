@@ -25,10 +25,28 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    viewedProducts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
     userType: {
-      type: String,
-      default: "",
+      type: Number,
+      default: 3,
+      enum: [1, 2, 3],
     },
+    addresses: [
+      {
+        address: { type: String },
+        city: { type: String },
+        phoneNumber: { type: String },
+        firstName: { type: String },
+        lastName: { type: String },
+        middleName: { type: String },
+        isDefault: { type: Boolean, default: false },
+      },
+    ],
   },
   {
     timestamps: true,

@@ -155,7 +155,7 @@ const refreshToken = async (req, res) => {
 
 const logoutUser = async (req, res) => {
   try {
-    const accessToken = req.headers.authorization.split(" ")[1];
+    const accessToken = req.headers?.authorization?.split(" ")[1];
     const response = await AuthService.logoutUser(res, accessToken);
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({
@@ -176,6 +176,7 @@ const logoutUser = async (req, res) => {
 const getAuthMe = async (req, res) => {
   try {
     const userId = req.userId;
+    console.log("userId", {userId})
     const response = await UserService.getDetailsUser(userId);
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({

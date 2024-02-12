@@ -31,6 +31,7 @@ const createOrder = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
+    console.log("hdaajde", {e})
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,
@@ -69,9 +70,9 @@ const getDetailsOrder = async (req, res) => {
   }
 };
 
-const cancelOrderDetails = async (req, res) => {
+const deleteOrderProduct = async (req, res) => {
   try {
-    const orderId = req.body.orderId;
+    const orderId = req.params.orderId;
     if (!orderId) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
@@ -80,10 +81,37 @@ const cancelOrderDetails = async (req, res) => {
         data: null,
       });
     }
-    const response = await OrderService.cancelOrderDetails(
-      req.body.orderId,
-      req.body.orderItems
-    );
+    const response = await OrderService.deleteOrderProduct(orderId);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    // console.log(e)
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+const cancelOrderProduct = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    if (!orderId) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field orderId is required`,
+        data: null,
+      });
+    }
+    const response = await OrderService.cancelOrder(orderId);
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({
       typeError,
@@ -114,7 +142,6 @@ const getAllOrder = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
-    // console.log(e)
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,
@@ -124,10 +151,41 @@ const getAllOrder = async (req, res) => {
   }
 };
 
-const getAllOrderMe = async (req, res) => {
+const updateOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    if (!orderId) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field orderId is required`,
+      });
+    }
+    const response = await OrderService.updateOrder(orderId, req.body);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+// *** me
+
+const getAllOrderOfMe = async (req, res) => {
   try {
     const params = req.query;
-    const userId = "";
+    const userId = req.userId;
+
     if (!userId) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
@@ -136,7 +194,70 @@ const getAllOrderMe = async (req, res) => {
         data: null,
       });
     }
-    const response = await OrderService.getAllOrderMe(params);
+    const response = await OrderService.getAllOrderOfMe(userId, params);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    console.log("eeee", e)
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+const getDetailsOrderOfMe = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const userId = req.userId;
+
+    if (!orderId) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field orderId is required`,
+        data: null,
+      });
+    }
+    const response = await OrderService.getDetailsOrderOfMe(userId, orderId);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+const cancelOrderOfMe = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const userId = req.userId;
+
+    if (!orderId) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field orderId is required`,
+        data: null,
+      });
+    }
+    const response = await OrderService.cancelOrderOfMe(userId, orderId);
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({
       typeError,
@@ -157,7 +278,11 @@ const getAllOrderMe = async (req, res) => {
 module.exports = {
   createOrder,
   getDetailsOrder,
-  cancelOrderDetails,
+  deleteOrderProduct,
   getAllOrder,
-  getAllOrderMe,
+  getAllOrderOfMe,
+  updateOrder,
+  cancelOrderProduct,
+  getDetailsOrderOfMe,
+  cancelOrderOfMe
 };

@@ -15,6 +15,8 @@ const createProduct = (newProduct) => {
       description,
       discount,
       slug,
+      status,
+      location,
     } = newProduct;
     try {
       const discountStartDate =
@@ -37,7 +39,7 @@ const createProduct = (newProduct) => {
           statusMessage: "Error",
         });
       }
-      const newProduct = await Product.create({
+      const dataCreate = {
         name,
         image,
         type,
@@ -49,13 +51,18 @@ const createProduct = (newProduct) => {
         slug: slug,
         discountStartDate,
         discountEndDate,
-      });
-      if (newProduct) {
+        status,
+      };
+      if (location) {
+        dataCreate.location = location;
+      }
+      const createdProduct = await Product.create(dataCreate);
+      if (createdProduct) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
           message: "Created product success",
           typeError: "",
-          data: newProduct,
+          data: createdProduct,
           statusMessage: "Success",
         });
       }
@@ -83,7 +90,7 @@ const updateProduct = (id, data) => {
         return;
       }
 
-      if (data.slug && data.slug !== checkRole.slug) {
+      if (data.slug && data.slug !== checkProduct.slug) {
         const existedName = await Product.findOne({
           slug: data.slug,
           _id: { $ne: id },
@@ -100,8 +107,12 @@ const updateProduct = (id, data) => {
           return;
         }
       }
+      const dataCreate = data;
+      if (data.location) {
+        dataCreate.location = data.location;
+      }
 
-      const updatedProduct = await Product.findByIdAndUpdate(id, data, {
+      const updatedProduct = await Product.findByIdAndUpdate(id, dataCreate, {
         new: true,
       });
       resolve({
@@ -192,11 +203,11 @@ const getDetailsProduct = (id) => {
   });
 };
 
-const getDetailsProductPublic = (id) => {
+const getDetailsProductPublic = (productId, userId) => {
   return new Promise(async (resolve, reject) => {
     try {
       const checkProduct = await Product.findOne({
-        _id: id,
+        _id: productId,
         status: 1,
       });
       if (checkProduct === null) {
@@ -208,6 +219,27 @@ const getDetailsProductPublic = (id) => {
           statusMessage: "Error",
         });
       }
+      const user = await User.findById(userId);
+
+      if (user) {
+        if (!user.viewedProducts.includes(productId)) {
+          user.viewedProducts.push(productId);
+
+          // if (user.viewedProducts.length > 10) {
+          //   user.viewedProducts.shift();
+          // }
+
+          await user.save();
+        }
+      }
+      if (checkProduct) {
+        if (!checkProduct.uniqueViews.includes(userId)) {
+          checkProduct.uniqueViews.push(userId);
+        }
+        checkProduct.views += 1;
+        await checkProduct.save();
+      }
+
       resolve({
         status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
         message: "Success",
@@ -221,15 +253,123 @@ const getDetailsProductPublic = (id) => {
   });
 };
 
+const getDetailsProductPublicBySlug = (slug, userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const checkProduct = await Product.aggregate([
+        { $match: { slug: slug, status: 1 } },
+        {
+          $lookup: {
+            from: "reviews",
+            localField: "_id",
+            foreignField: "product",
+            as: "reviews",
+          },
+        },
+        {
+          $lookup: {
+            from: "cities",
+            localField: "location",
+            foreignField: "_id",
+            as: "locationInfo",
+          },
+        },
+        {
+          $lookup: {
+            from: "producttypes",
+            localField: "type",
+            foreignField: "_id",
+            as: "typeInfo",
+          },
+        },
+        {
+          $addFields: {
+            averageRating: {
+              $ifNull: [{ $avg: "$reviews.star" }, 0],
+            },
+            totalReviews: { $size: "$reviews" },
+          },
+        },
+        {
+          $project: {
+            name: 1,
+            image: 1,
+            price: 1,
+            countInStock: 1,
+            description: 1,
+            discount: 1,
+            discountStartDate: 1,
+            discountEndDate: 1,
+            sold: 1,
+            likedBy: 1,
+            location: {
+              $arrayElemAt: ["$locationInfo", 0],
+            },
+            type: {
+              $arrayElemAt: ["$typeInfo", 0],
+            },
+            averageRating: 1,
+            totalReviews: 1,
+            // createdAt: 1,
+            slug: 1,
+            totalLikes: 1,
+            views: 1,
+            uniqueViews: 1,
+          },
+        },
+      ]);
+
+      if (checkProduct.length === 0) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "The product is not existed",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      const user = await User.findById(userId);
+      const productId = checkProduct[0]._id.toString();
+
+      if (user) {
+        console.log("productId", {productId,user: user.viewedProducts })
+        if (productId && !user.viewedProducts.includes(productId)) {
+          user.viewedProducts.push(productId);
+
+          await user.save();
+        }
+      }
+      if (checkProduct[0] && userId) {
+        if (!checkProduct[0]?.uniqueViews?.includes(userId)) {
+          checkProduct[0]?.uniqueViews?.push(userId);
+        }
+        checkProduct[0].views += 1;
+
+        await Product.findByIdAndUpdate(checkProduct[0]._id, checkProduct[0]);
+      }
+      resolve({
+        status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+        message: "Success",
+        typeError: "",
+        data: checkProduct[0],
+        statusMessage: "Success",
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 const getAllProduct = (params) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const limit = +params?.limit ?? 10;
+      const limit = params?.limit ? +params?.limit : 10;
       const search = params?.search ?? "";
-      const page = +params?.page ?? 1;
-      const order = params?.order ?? "";
+      const page = params?.page ? +params.page : 1;
+      const order = params?.order ?? "created desc";
       const productType = params?.productType ?? "";
-      const minStar = +params?.minStar || 1;
+      const productLocation = params?.productLocation ?? "";
+      const minStar = +params?.minStar || 0;
       const maxStar = +params?.maxStar || 5;
       const minPrice = +params?.minPrice || 0;
       const maxPrice = +params?.maxPrice || Number.MAX_SAFE_INTEGER;
@@ -244,6 +384,16 @@ const getAllProduct = (params) => {
           productTypeIds.length > 1
             ? { $in: productTypeIds }
             : mongoose.Types.ObjectId(productType);
+      }
+
+      if (productLocation) {
+        const productLocationIds = productLocation
+          ?.split("|")
+          .map((id) => mongoose.Types.ObjectId(id));
+        query.type =
+          productLocationIds.length > 1
+            ? { $in: productLocationIds }
+            : mongoose.Types.ObjectId(productLocation);
       }
 
       if (statusFilter !== undefined) {
@@ -281,14 +431,20 @@ const getAllProduct = (params) => {
         image: 1,
         name: 1,
         createdAt: 1,
-        updatedAt: 1,
         price: 1,
+        countInStock: 1,
         totalLikes: 1,
         averageRating: 1,
         type: 1,
+        status: 1,
         type: {
           id: "$typeInfo._id",
           name: "$typeInfo.name",
+        },
+        location: 1,
+        location: {
+          id: "$locationInfo._id",
+          name: "$locationInfo.name",
         },
       };
 
@@ -327,6 +483,17 @@ const getAllProduct = (params) => {
             $unwind: "$typeInfo",
           },
           {
+            $lookup: {
+              from: "cities",
+              localField: "location",
+              foreignField: "_id",
+              as: "locationInfo",
+            },
+          },
+          {
+            $unwind: "$locationInfo",
+          },
+          {
             $project: fieldsToSelect,
           },
         ]);
@@ -361,13 +528,16 @@ const getAllProduct = (params) => {
         {
           $addFields: {
             averageRating: {
-              $ifNull: [{ $avg: "$reviews.star" }, 0],
+              $ifNull: [{ $avg: { $ifNull: ["$reviews.star", 0] } }, 0],
             },
           },
         },
         {
           $match: {
-            "reviews.star": { $gte: minStar, $lte: maxStar },
+            $or: [
+              { averageRating: { $gte: minStar, $lte: maxStar } },
+              { averageRating: { $exists: false } },
+            ],
           },
         },
         {
@@ -382,10 +552,20 @@ const getAllProduct = (params) => {
           $unwind: "$typeInfo",
         },
         {
+          $lookup: {
+            from: "cities",
+            localField: "location",
+            foreignField: "_id",
+            as: "locationInfo",
+          },
+        },
+        {
+          $unwind: "$locationInfo",
+        },
+        {
           $project: fieldsToSelect,
         },
       ];
-
       const allProduct = await Product.aggregate(pipeline);
 
       resolve({
@@ -408,12 +588,14 @@ const getAllProduct = (params) => {
 const getAllProductPublic = (params) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const limit = +params?.limit ?? 10;
+      const limit = params?.limit ? +params?.limit : 10;
       const search = params?.search ?? "";
-      const page = +params?.page ?? 1;
-      const order = params?.order ?? "";
+      const page = params?.page ? +params.page : 1;
+      const order = params?.order ?? "created desc";
       const productType = params?.productType ?? "";
-      const minStar = +params?.minStar || 1;
+      const productLocation = params?.productLocation ?? "";
+
+      const minStar = +params?.minStar || 0;
       const maxStar = +params?.maxStar || 5;
       const minPrice = +params?.minPrice || 0;
       const maxPrice = +params?.maxPrice || Number.MAX_SAFE_INTEGER;
@@ -428,6 +610,16 @@ const getAllProductPublic = (params) => {
           productTypeIds.length > 1
             ? { $in: productTypeIds }
             : mongoose.Types.ObjectId(productType);
+      }
+
+      if (productLocation) {
+        const productLocationIds = productLocation
+          ?.split("|")
+          .map((id) => mongoose.Types.ObjectId(id));
+        query.location =
+          productLocationIds.length > 1
+            ? { $in: productLocationIds }
+            : mongoose.Types.ObjectId(productLocation);
       }
 
       if (search) {
@@ -456,15 +648,27 @@ const getAllProductPublic = (params) => {
       const fieldsToSelect = {
         image: 1,
         name: 1,
-        createdAt: 1,
-        updatedAt: 1,
+        // createdAt: 1,
         price: 1,
-        totalLikes: 1,
+        sold: 1,
+        slug: 1,
+        // totalLikes: 1,
         averageRating: 1,
+        totalReviews: 1,
+        countInStock: 1,
+        discount: 1,
+        likedBy: 1,
+        discountStartDate: 1,
+        discountEndDate: 1,
         type: 1,
         type: {
           id: "$typeInfo._id",
           name: "$typeInfo.name",
+        },
+        location: 1,
+        location: {
+          id: "$locationInfo._id",
+          name: "$locationInfo.name",
         },
       };
 
@@ -482,13 +686,17 @@ const getAllProductPublic = (params) => {
           {
             $addFields: {
               averageRating: {
-                $ifNull: [{ $avg: "$reviews.star" }, 0],
+                $ifNull: [{ $avg: { $ifNull: ["$reviews.star", 0] } }, 0],
+                totalReviews: { $size: "$reviews" },
               },
             },
           },
           {
             $match: {
-              "reviews.star": { $gte: minStar, $lte: maxStar },
+              $or: [
+                { averageRating: { $gte: minStar, $lte: maxStar } },
+                { averageRating: { $exists: false } },
+              ],
             },
           },
           {
@@ -503,6 +711,17 @@ const getAllProductPublic = (params) => {
             $unwind: "$typeInfo",
           },
           {
+            $lookup: {
+              from: "cities",
+              localField: "location",
+              foreignField: "_id",
+              as: "locationInfo",
+            },
+          },
+          {
+            $unwind: "$locationInfo",
+          },
+          {
             $project: fieldsToSelect,
           },
         ]);
@@ -514,7 +733,7 @@ const getAllProductPublic = (params) => {
           statusMessage: "Success",
           data: {
             products: allProduct,
-            totalPage: 1,
+            totalPage: totalPage,
             totalCount: totalCount,
           },
         });
@@ -537,13 +756,17 @@ const getAllProductPublic = (params) => {
         {
           $addFields: {
             averageRating: {
-              $ifNull: [{ $avg: "$reviews.star" }, 0],
+              $ifNull: [{ $avg: { $ifNull: ["$reviews.star", 0] } }, 0],
             },
+            totalReviews: { $size: "$reviews" },
           },
         },
         {
           $match: {
-            "reviews.star": { $gte: minStar, $lte: maxStar },
+            $or: [
+              { averageRating: { $gte: minStar, $lte: maxStar } },
+              { averageRating: { $exists: false } },
+            ],
           },
         },
         {
@@ -558,12 +781,22 @@ const getAllProductPublic = (params) => {
           $unwind: "$typeInfo",
         },
         {
+          $lookup: {
+            from: "cities",
+            localField: "location",
+            foreignField: "_id",
+            as: "locationInfo",
+          },
+        },
+        {
+          $unwind: "$locationInfo",
+        },
+        {
           $project: fieldsToSelect,
         },
       ];
 
       const allProduct = await Product.aggregate(pipeline);
-
       resolve({
         status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
         message: "Success",
@@ -595,6 +828,7 @@ const likeProduct = (productId, userId) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
       }
       if (existingProduct === null) {
         resolve({
@@ -604,6 +838,7 @@ const likeProduct = (productId, userId) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
       }
       if (existingUser.likedProducts?.includes(productId)) {
         resolve({
@@ -613,6 +848,7 @@ const likeProduct = (productId, userId) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
       }
       existingUser.likedProducts.push(productId);
       existingProduct.totalLikes += 1;
@@ -647,6 +883,7 @@ const unlikeProduct = (productId, userId) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
       }
       if (existingProduct === null) {
         resolve({
@@ -656,6 +893,7 @@ const unlikeProduct = (productId, userId) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
       }
       if (!existingUser.likedProducts?.includes(productId)) {
         resolve({
@@ -665,15 +903,17 @@ const unlikeProduct = (productId, userId) => {
           data: null,
           statusMessage: "Error",
         });
+        return;
       }
-      existingUser.likedProducts = existingUser.likedProducts.filter(
-        (id) => id !== productId
-      );
+      existingUser.likedProducts = existingUser.likedProducts.filter((id) => {
+        return id.toString() !== existingProduct._id.toString();
+      });
       existingProduct.likedBy = existingProduct.likedBy.filter(
-        (id) => id !== existingUser?._id
+        (id) => id.toString() !== existingUser._id.toString()
       );
-      existingProduct.totalLikes -= 1;
-
+      if (existingProduct.totalLikes > 0) {
+        existingProduct.totalLikes -= 1;
+      }
       await existingProduct.save();
       await existingUser.save();
       resolve({
@@ -707,6 +947,302 @@ const autoUpdateDiscounts = async () => {
   }
 };
 
+const getAllProductViewed = (userId, params) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const limit = params?.limit ? +params?.limit : 10;
+      const search = params?.search ?? "";
+      const page = params?.page ? +params.page : 1;
+      const query = {};
+
+      const user = await User.findById(userId);
+      if (!user || !user.viewedProducts) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+          message: "Success",
+          typeError: "",
+          data: {
+            products: [],
+            totalPage: 0,
+            totalCount: 0,
+          },
+          statusMessage: "Success",
+        });
+        return;
+      }
+
+      if (search) {
+        const searchRegex = { $regex: search, $options: "i" };
+
+        query.$or = [{ name: searchRegex }];
+      }
+      const total = user?.viewedProducts?.length;
+
+      const totalPage = Math.ceil(total / limit);
+
+      const startIndex = (page - 1) * limit;
+      const viewedProducts = await Product.find({
+        _id: { $in: user.viewedProducts },
+        ...query,
+      })
+        .skip(startIndex)
+        .limit(limit);
+
+      resolve({
+        status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+        message: "Success",
+        typeError: "",
+        data: {
+          products: viewedProducts,
+          totalPage: totalPage,
+          totalCount: total,
+        },
+        statusMessage: "Success",
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const getAllProductLiked = (userId, params) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const limit = params?.limit ? +params?.limit : 10;
+      const search = params?.search ?? "";
+      const page = params?.page ? +params.page : 1;
+      const user = await User.findById(userId);
+      const query = {};
+
+      if (!user || !user.likedProducts) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
+          message: "Success",
+          typeError: "",
+          data: {
+            products: [],
+            totalPage: 0,
+            totalCount: 0,
+          },
+          statusMessage: "Success",
+        });
+        return;
+      }
+
+      if (search) {
+        const searchRegex = { $regex: search, $options: "i" };
+
+        query.$or = [{ name: searchRegex }];
+      }
+      const total = user?.likedProducts?.length;
+
+      const totalPage = Math.ceil(total / limit);
+
+      const startIndex = (page - 1) * limit;
+      const likedProducts = await Product.find({
+        _id: { $in: user.likedProducts },
+        ...query,
+      })
+        .skip(startIndex)
+        .limit(limit);
+
+      resolve({
+        status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
+        message: "Success",
+        typeError: "",
+        data: {
+          products: likedProducts,
+          totalPage: totalPage,
+          totalCount: total,
+        },
+        statusMessage: "Success",
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const getListRelatedProductBySlug = (params) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const limit = params?.limit ? +params?.limit : 10;
+      const search = params?.search ?? "";
+      const page = params?.page ? +params?.page : 1;
+      const order = params?.order ?? "created desc";
+      const slug = params.slug;
+      const query = {};
+      query.status = 1;
+
+      const checkProduct = await Product.findOne({ slug });
+
+      if (checkProduct === null) {
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+          message: "The product is not existed",
+          typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+          data: null,
+          statusMessage: "Error",
+        });
+      }
+      query.slug = { $ne: slug };
+      if (checkProduct.type) {
+        query.type = mongoose.Types.ObjectId(checkProduct.type);
+      }
+
+      if (search) {
+        const searchRegex = { $regex: search, $options: "i" };
+
+        query.$or = [{ name: searchRegex }];
+      }
+
+      const totalCount = await Product.countDocuments(query);
+      const totalPage = Math.ceil(totalCount / limit);
+
+      const startIndex = (page - 1) * limit;
+      console.log("totalCount", {
+        totalCount,
+        totalPage,
+        limit,
+        page,
+        params: +params?.limit ?? 10,
+      });
+
+      let sortOptions = {};
+      if (order) {
+        const orderFields = order
+          .split(",")
+          .map((field) => field.trim().split(" "));
+        orderFields.forEach(([name, direction]) => {
+          sortOptions[name] = direction.toLowerCase() === "asc" ? 1 : -1;
+        });
+      }
+
+      const fieldsToSelect = {
+        image: 1,
+        name: 1,
+        createdAt: 1,
+        price: 1,
+        sold: 1,
+        slug: 1,
+        totalLikes: 1,
+        averageRating: 1,
+        totalReviews: 1,
+        countInStock: 1,
+        discount: 1,
+        discountStartDate: 1,
+        discountEndDate: 1,
+        type: 1,
+        type: {
+          id: "$typeInfo._id",
+          name: "$typeInfo.name",
+        },
+      };
+
+      if (page === -1 && limit === -1) {
+        const allProduct = await Product.aggregate([
+          { $match: query },
+          {
+            $lookup: {
+              from: "reviews",
+              localField: "_id",
+              foreignField: "product",
+              as: "reviews",
+            },
+          },
+          {
+            $addFields: {
+              averageRating: {
+                $ifNull: [{ $avg: { $ifNull: ["$reviews.star", 0] } }, 0],
+                totalReviews: { $size: "$reviews" },
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "producttypes",
+              localField: "type",
+              foreignField: "_id",
+              as: "typeInfo",
+            },
+          },
+          {
+            $unwind: "$typeInfo",
+          },
+          {
+            $project: fieldsToSelect,
+          },
+        ]);
+
+        resolve({
+          status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+          message: "Success",
+          typeError: "",
+          statusMessage: "Success",
+          data: {
+            products: allProduct,
+            totalPage: totalPage,
+            totalCount: totalCount,
+          },
+        });
+        return;
+      }
+      console.log("query", { query, sortOptions, startIndex, limit });
+      const pipeline = [
+        { $match: query },
+        { $sort: sortOptions },
+        { $skip: startIndex },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "reviews",
+            localField: "_id",
+            foreignField: "product",
+            as: "reviews",
+          },
+        },
+        {
+          $addFields: {
+            averageRating: {
+              $ifNull: [{ $avg: { $ifNull: ["$reviews.star", 0] } }, 0],
+            },
+            totalReviews: { $size: "$reviews" },
+          },
+        },
+        {
+          $lookup: {
+            from: "producttypes",
+            localField: "type",
+            foreignField: "_id",
+            as: "typeInfo",
+          },
+        },
+        {
+          $unwind: "$typeInfo",
+        },
+        {
+          $project: fieldsToSelect,
+        },
+      ];
+
+      const allProduct = await Product.aggregate(pipeline);
+      resolve({
+        status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
+        message: "Success",
+        typeError: "",
+        statusMessage: "Success",
+        data: {
+          products: allProduct,
+          totalPage: totalPage,
+          totalCount: totalCount,
+        },
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -717,5 +1253,9 @@ module.exports = {
   likeProduct,
   unlikeProduct,
   getDetailsProductPublic,
-  getAllProductPublic
+  getAllProductPublic,
+  getAllProductViewed,
+  getAllProductLiked,
+  getDetailsProductPublicBySlug,
+  getListRelatedProductBySlug,
 };

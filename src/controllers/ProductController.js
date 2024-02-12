@@ -13,8 +13,8 @@ const createProduct = async (req, res) => {
     ]);
     const discountValidation = validateDiscountDate(
       req.body.discount,
-      req.body.discountStartDate,
-      req.body.discountEndDate
+      new Date(req.body.discountStartDate),
+      new Date(req.body.discountEndDate)
     );
 
     if (requiredFields?.length) {
@@ -41,6 +41,7 @@ const createProduct = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
+    console.log("eeee",{e})
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,
@@ -55,8 +56,8 @@ const updateProduct = async (req, res) => {
     const productId = req.params.id;
     const discountValidation = validateDiscountDate(
       req.body.discount,
-      req.body.discountStartDate,
-      req.body.discountEndDate
+      new Date(req.body.discountStartDate),
+      new Date(req.body.discountEndDate)
     );
 
     const requiredFields = validateRequiredInput(req.body, [
@@ -83,9 +84,9 @@ const updateProduct = async (req, res) => {
       });
     } else if (!discountValidation.isValid) {
       return res.status({
-        status: CONFIG_MESSAGE_ERRORS.INVALID_INPUT.status,
+        status: CONFIG_MESSAGE_ERRORS.INVALID.status,
         message: discountValidation.error,
-        typeError: CONFIG_MESSAGE_ERRORS.INVALID_INPUT.type,
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
         data: null,
       });
     }
@@ -98,6 +99,7 @@ const updateProduct = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
+    console.log("eeeee", { e });
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,
@@ -138,6 +140,7 @@ const getDetailsProduct = async (req, res) => {
 const getDetailsProductPublic = async (req, res) => {
   try {
     const productId = req.params.id;
+    const userId = req?.userId;
     if (!productId) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
@@ -145,7 +148,10 @@ const getDetailsProductPublic = async (req, res) => {
         message: `The field productId is required`,
       });
     }
-    const response = await ProductService.getDetailsProductPublic(productId);
+    const response = await ProductService.getDetailsProductPublic(
+      productId,
+      userId
+    );
     const { data, status, typeError, message, statusMessage } = response;
     return res.status(status).json({
       typeError,
@@ -154,6 +160,39 @@ const getDetailsProductPublic = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
+const getDetailsProductPublicBySlug = async (req, res) => {
+  try {
+    const slugId = req.params.slug;
+    const userId = req?.userId;
+    if (!slugId) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field slugId is required`,
+      });
+    }
+    const response = await ProductService.getDetailsProductPublicBySlug(
+      slugId,
+      userId
+    );
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    console.log("Error", {e})
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,
@@ -193,12 +232,12 @@ const deleteProduct = async (req, res) => {
 
 const deleteMany = async (req, res) => {
   try {
-    const ids = req.body.userIds;
+    const ids = req.body.productIds;
     if (!ids || !ids.length) {
       return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
         status: "Error",
         typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
-        message: `The field userIds is required`,
+        message: `The field productIds is required`,
       });
     }
     const response = await ProductService.deleteManyProduct(ids);
@@ -252,6 +291,7 @@ const getAllProductPublic = async (req, res) => {
       status: statusMessage,
     });
   } catch (e) {
+    console.log("e", {e})
     return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
       message: "Internal Server Error",
       data: null,
@@ -323,6 +363,78 @@ const unlikeProduct = async (req, res) => {
   }
 };
 
+const getAllProductLiked = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const params = req.query;
+
+    const response = await ProductService.getAllProductLiked(userId, params);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      typeError: "Internal Server Error",
+      data: null,
+      status: "Error",
+    });
+  }
+};
+
+const getAllProductViewed = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const params = req.query;
+    const response = await ProductService.getAllProductViewed(userId, params);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      typeError: "Internal Server Error",
+      data: null,
+      status: "Error",
+    });
+  }
+};
+
+const getListRelatedProductBySlug = async (req, res) => {
+  try {
+    const params = req.query;
+    if (!params.slug) {
+      return res.status(CONFIG_MESSAGE_ERRORS.INVALID.status).json({
+        status: "Error",
+        typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+        message: `The field slug is required`,
+      });
+    }
+    const response = await ProductService.getListRelatedProductBySlug(params);
+    const { data, status, typeError, message, statusMessage } = response;
+    return res.status(status).json({
+      typeError,
+      data,
+      message,
+      status: statusMessage,
+    });
+  } catch (e) {
+    console.log("eeeee", {e})
+    return res.status(CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.status).json({
+      message: "Internal Server Error",
+      data: null,
+      status: "Error",
+      typeError: CONFIG_MESSAGE_ERRORS.INTERNAL_ERROR.type,
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -333,5 +445,9 @@ module.exports = {
   likeProduct,
   unlikeProduct,
   getDetailsProductPublic,
-  getAllProductPublic
+  getAllProductPublic,
+  getAllProductViewed,
+  getAllProductLiked,
+  getDetailsProductPublicBySlug,
+  getListRelatedProductBySlug,
 };

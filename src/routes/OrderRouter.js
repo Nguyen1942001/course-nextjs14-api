@@ -10,10 +10,16 @@ router.post(
   OrderController.createOrder
 );
 
+router.put(
+  "/:id",
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.ORDER.UPDATE),
+  OrderController.updateOrder
+);
+
 router.get(
-  "/all",
-  AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.ORDER.VIEW),
-  OrderController.getAllOrder
+  "/me",
+  AuthPermission("", true),
+  OrderController.getAllOrderOfMe
 );
 
 router.get(
@@ -22,16 +28,39 @@ router.get(
   OrderController.getDetailsOrder
 );
 
-router.delete(
-  "/cancel-order/:orderId",
-  AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.ORDER.DELETE),
-  OrderController.cancelOrderDetails
-);
-
 router.get(
   "/",
   AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.ORDER.VIEW),
-  OrderController.getAllOrderMe
+  OrderController.getAllOrder
 );
+
+
+router.post(
+  "/cancel/:orderId",
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.ORDER.UPDATE),
+  OrderController.cancelOrderProduct
+);
+
+router.delete(
+  "/:orderId",
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_ORDER.ORDER.DELETE),
+  OrderController.deleteOrderProduct
+);
+
+// me
+
+router.post(
+  "/me/cancel/:orderId",
+  AuthPermission("", true),
+  OrderController.cancelOrderOfMe
+);
+
+router.get(
+  "/me/:orderId",
+  AuthPermission("", true),
+  OrderController.getDetailsOrderOfMe
+);
+
+
 
 module.exports = router;

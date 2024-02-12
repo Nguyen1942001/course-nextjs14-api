@@ -16,21 +16,35 @@ router.put(
   ProductController.updateProduct
 );
 
-router.get("/public/:id", ProductController.getDetailsProductPublic);
+router.get(
+  "/liked/me",
+  AuthPermission("", true),
+  ProductController.getAllProductLiked
+);
+
+router.get(
+  "/viewed/me",
+  AuthPermission("", true),
+  ProductController.getAllProductViewed
+);
+
+router.get("/related", ProductController.getListRelatedProductBySlug);
+
+router.get(
+  "/public/slug/:slug",
+  AuthPermission("", true, true),
+  ProductController.getDetailsProductPublicBySlug
+);
+
+router.get("/public/:id",AuthPermission("", true), ProductController.getDetailsProductPublic);
+
+router.get("/public", ProductController.getAllProductPublic);
 
 router.get(
   "/:id",
   AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.VIEW),
   ProductController.getDetailsProduct
 );
-
-router.delete(
-  "/:id",
-  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.DELETE),
-  ProductController.deleteProduct
-);
-
-router.get("/public", ProductController.getAllProductPublic);
 
 router.get(
   "/",
@@ -50,6 +64,12 @@ router.delete(
   "/delete-many",
   AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.DELETE),
   ProductController.deleteMany
+);
+
+router.delete(
+  "/:id",
+  AuthPermission(CONFIG_PERMISSIONS.MANAGE_PRODUCT.PRODUCT.DELETE),
+  ProductController.deleteProduct
 );
 
 module.exports = router;

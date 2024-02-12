@@ -166,10 +166,10 @@ const getDetailsProductType = (id) => {
 const getAllProductType = (params) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const limit = +params?.limit ?? 10;
+      const limit = params?.limit ? +params?.limit : 10;
       const search = params?.search ?? "";
-      const page = +params?.page ?? 1;
-      const order = params?.order ?? "";
+      const page = params?.page ?  +params.page :  1;
+      const order = params?.order ?? "created desc";
       const query = {};
       if (search) {
         const searchRegex = { $regex: search, $options: "i" };

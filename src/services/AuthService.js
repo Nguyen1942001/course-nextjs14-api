@@ -116,7 +116,7 @@ const loginUser = (userLogin) => {
 const logoutUser = (res, accessToken) => {
   return new Promise(async (resolve, reject) => {
     try {
-      addToBlacklist(accessToken);
+      // addToBlacklist(accessToken);
       resolve({
         status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
         message: "logout Success",
@@ -176,6 +176,21 @@ const updateAuthMe = (id, data, isPermission) => {
           data: null,
           statusMessage: "Error",
         });
+        return
+      }
+
+      if (data.addresses) {
+        const defaultAddresses = data.addresses.filter(address => address.isDefault);
+        if (defaultAddresses.length > 1) {
+          resolve({
+            status: CONFIG_MESSAGE_ERRORS.INVALID.status,
+            message: "Only one default address is allowed",
+            typeError: CONFIG_MESSAGE_ERRORS.INVALID.type,
+            data: null,
+            statusMessage: "Error",
+          });
+          return;
+        }
       }
 
       const updatedUser = await User.findByIdAndUpdate(id, data, { new: true })
@@ -185,6 +200,7 @@ const updateAuthMe = (id, data, isPermission) => {
           select: "name permissions",
         })
         .lean();
+
       resolve({
         status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
         message: "Updated user success",
@@ -419,7 +435,6 @@ const registerGoogle = (idToken) => {
       }
       const newUser = await User.create({
         email,
-        role: [CONFIG_PERMISSIONS.BASIC],
         userType: CONFIG_USER_TYPE.GOOGLE,
       });
       if (newUser) {
@@ -522,7 +537,6 @@ const registerFacebook = (idToken) => {
       }
       const newUser = await User.create({
         email,
-        role: [CONFIG_PERMISSIONS.BASIC],
         userType: CONFIG_USER_TYPE.FACEBOOK,
       });
       if (newUser) {

@@ -9,6 +9,7 @@ const RoleRouter = require("./RoleRouter");
 const CityRouter = require("./CityRouter");
 const DeliveryTypeRouter = require("./DeliveryTypeRouter");
 const PaymentTypeRouter = require("./PaymentTypeRouter");
+const ReportRouter = require("./ReportRouter");
 
 const routes = (app) => {
   app.use("/api/auth", AuthRouter);
@@ -22,6 +23,7 @@ const routes = (app) => {
   app.use("/api/city", CityRouter);
   app.use("/api/delivery-type", DeliveryTypeRouter);
   app.use("/api/payment-type", PaymentTypeRouter);
+  app.use("/api/report", ReportRouter);
 };
 
 module.exports = routes;

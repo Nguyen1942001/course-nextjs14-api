@@ -218,7 +218,7 @@ const getAllReview = (params) => {
       const limit = params?.limit ?? 10;
       const search = params?.search ?? "";
       const page = params?.page ?? 1;
-      const order = params?.order ?? "";
+      const order = params?.order ?? "created desc";
       const userId = params.userId ?? "";
       const productId = params.productId ?? "";
 

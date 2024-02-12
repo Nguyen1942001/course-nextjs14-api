@@ -1,6 +1,6 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
-const { CONFIG_MESSAGE_ERRORS } = require("../configs");
+const { CONFIG_MESSAGE_ERRORS, CONFIG_USER_TYPE } = require("../configs");
 const { isAdminPermission } = require("../utils");
 const mongoose = require("mongoose");
 
@@ -198,10 +198,10 @@ const deleteManyUser = (ids) => {
 const getAllUser = (params) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const limit = +params?.limit ?? 10;
+      const limit = params?.limit ? +params?.limit : 10;
       const search = params?.search ?? "";
-      const page = +params?.page ?? 1;
-      const order = params?.order ?? "";
+      const page = params?.page ?  +params.page :  1;
+      const order = params?.order ?? "created desc";
       const query = {};
       const roleId = params?.roleId ?? "";
       const status = params?.status ?? "";
@@ -295,7 +295,7 @@ const getAllUser = (params) => {
 
         return;
       }
-      console.log("query", { query });
+
       const allUser = await User.find(query)
         .skip(startIndex)
         .limit(limit)
