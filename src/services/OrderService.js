@@ -1,9 +1,10 @@
-const { CONFIG_MESSAGE_ERRORS } = require("../configs");
+const { CONFIG_MESSAGE_ERRORS, PAYMENT_TYPES } = require("../configs");
 const Order = require("../models/OrderProduct");
 const Product = require("../models/ProductModel");
 const EmailService = require("../services/EmailService");
 const { preparePaginationAndSorting, buildQuery } = require("../utils");
 const mongoose = require("mongoose");
+const PaymentType = require("../models/PaymentType");
 
 const updateProductStock = async (order) => {
   try {
@@ -57,7 +58,7 @@ const createOrder = (newOrder) => {
       isPaid,
       paidAt,
       email,
-      deliveryMethod
+      deliveryMethod,
     } = newOrder;
     try {
       const promises = newOrder.orderItems.map(updateProductStock);
@@ -96,7 +97,12 @@ const createOrder = (newOrder) => {
           dataCreate.deliveryMethod = deliveryMethod;
         }
         if (paymentMethod) {
+          const findPayment = await PaymentType.findById(paymentMethod);
+          console.log("findPayment", { findPayment });
           dataCreate.paymentMethod = paymentMethod;
+          if (findPayment.type !== PAYMENT_TYPES.PAYMENT_LATER) {
+            dataCreate.status = 0;
+          }
         }
         const createdOrder = await Order.create(dataCreate);
         if (createdOrder) {
@@ -286,14 +292,19 @@ const getAllOrder = (params) => {
     try {
       const limit = params?.limit ? +params?.limit : 10;
       const search = params?.search ?? "";
-      const page = params?.page ?  +params.page :  1;
+      const page = params?.page ? +params.page : 1;
       const order = params?.order ?? "created desc";
       const userId = params.userId ?? "";
       const productId = params.productId ?? "";
       const status = params.status ?? "";
       const cityId = params.cityId ?? "";
+      const query = {};
 
-      const query = buildQuery(search);
+      if (search) {
+        const searchRegex = { $regex: search, $options: "i" };
+
+        query.$or = [{ "orderItems.name": searchRegex }];
+      }
 
       const { startIndex, sortOptions } = preparePaginationAndSorting(
         page,
@@ -341,9 +352,19 @@ const getAllOrder = (params) => {
 
       const fieldsToSelect = {
         status: 1,
-        email: 1,
-        createdAt: 1,
-        updatedAt: 1,
+        // createdAt: 1,
+        orderItems: 1,
+        // shippingAddress: 1,
+        // paymentMethod: 1,
+        // deliveryMethod: 1,
+        itemsPrice: 1,
+        shippingPrice: 1,
+        totalPrice: 1,
+        // user: 1,
+        isPaid: 1,
+        paidAt: 1,
+        deliveryAt: 1,
+        isDelivered: 1,
       };
 
       if (page === -1 && limit === -1) {
@@ -396,8 +417,14 @@ const getAllOrderOfMe = (userId, params) => {
       const order = params?.order ?? "created desc";
       const product = params.product ?? "";
       const status = params.status ?? "";
-      const query = buildQuery(search);
+      const query = {};
       query.user = mongoose.Types.ObjectId(userId);
+
+      if (search) {
+        const searchRegex = { $regex: search, $options: "i" };
+
+        query.$or = [{ "orderItems.name": searchRegex }];
+      }
       const { startIndex, sortOptions } = preparePaginationAndSorting(
         page,
         limit,
@@ -426,18 +453,41 @@ const getAllOrderOfMe = (userId, params) => {
 
       const fieldsToSelect = {
         status: 1,
-        email: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        user: 1,
+        // createdAt: 1,
+        orderItems: 1,
+        shippingAddress: 1,
+        // paymentMethod: 1,
+        // deliveryMethod: 1,
+        // itemsPrice: 1,
+        // shippingPrice: 1,
+        totalPrice: 1,
+        // user: 1,
+        isPaid: 1,
+        paidAt: 1,
+        deliveryAt: 1,
+        isDelivered: 1,
       };
-      console.log("query", {query})
+      console.log("query", { query });
       const allOrder = await Order.find(query)
         .skip(startIndex)
         .limit(limit)
         .sort(sortOptions)
+        .populate([
+          {
+            path: "user",
+            select: "_id firstName lastName middleName",
+          },
+          {
+            path: "deliveryMethod",
+            select: "name price",
+          },
+          {
+            path: "paymentMethod",
+            select: "name type",
+          },
+        ])
         .select(fieldsToSelect);
-        
+
       resolve({
         status: CONFIG_MESSAGE_ERRORS.GET_SUCCESS.status,
         message: "Success",
@@ -501,8 +551,8 @@ const getDetailsOrderOfMe = (userId, orderId) => {
 const cancelOrderOfMe = (userId, orderId) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const order = await Order.findById(orderId);
-      if (!order) {
+      const checkOrder = await Order.findById(orderId);
+      if (!checkOrder) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
           message: "The Order is not existed",
@@ -512,8 +562,8 @@ const cancelOrderOfMe = (userId, orderId) => {
         });
         return;
       }
-
-      if (checkOrder.user !== userId) {
+      console.log("checkOrder", {checkOrder, userId})
+      if (checkOrder.user?.toString() !== userId) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.UNAUTHORIZED.status,
           message: "You no has permission",
@@ -524,7 +574,7 @@ const cancelOrderOfMe = (userId, orderId) => {
         return;
       }
 
-      if (order.isPaid === 1) {
+      if (checkOrder.isPaid === 1) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.INVALID.status,
           message: "Cannot cancel order that has been paid",
@@ -535,13 +585,13 @@ const cancelOrderOfMe = (userId, orderId) => {
         return;
       }
 
-      order.status = 3;
-      await order.save();
+      checkOrder.status = 3;
+      await checkOrder.save();
       resolve({
         status: CONFIG_MESSAGE_ERRORS.ACTION_SUCCESS.status,
         message: "Order cancelled successfully",
         typeError: "",
-        data: order,
+        data: checkOrder,
         statusMessage: "Success",
       });
     } catch (error) {
