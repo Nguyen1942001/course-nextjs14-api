@@ -1,4 +1,5 @@
 const User = require("../models/UserModel");
+const Role = require("../models/RoleModel");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("./JwtService");
 const {
@@ -19,6 +20,11 @@ const registerUser = (newUser) => {
       const existedUser = await User.findOne({
         email: email,
       });
+
+      const basicRole = await Role.findOne({
+        name: "Basic",
+      });
+
       if (existedUser !== null) {
         resolve({
           status: CONFIG_MESSAGE_ERRORS.ALREADY_EXIST.status,
@@ -33,6 +39,7 @@ const registerUser = (newUser) => {
         email,
         password: hash,
         status: 1,
+        role: basicRole._id
       });
       if (createdUser) {
         resolve({
